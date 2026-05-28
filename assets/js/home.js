@@ -409,3 +409,22 @@ window.addEventListener('resize', function () {
         if (movementChart) movementChart.resize();
     }, 150);
 });
+
+
+/* ── Theme toggle ── */
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('theme-icon');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+    localStorage.setItem('inno-theme', theme);
+}
+
+window.toggleTheme = function () {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+};
+
+const savedTheme = localStorage.getItem('inno-theme') || 'light';
+applyTheme(savedTheme);

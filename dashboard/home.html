@@ -42,19 +42,17 @@
             <!-- Topbar -->
             <header class="topbar">
                 <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-                    <i class="fa-solid fa-bars"></i>
+                    <i class="fa-solid fa-bars-staggered"></i>
                 </button>
 
                 <div class="topbar-title">
-                    <h1>Dashboard</h1>
                     <p id="topbar-date"></p>
                 </div>
 
                 <div class="topbar-right">
-                    <div class="period-toggle" id="period-toggle">
-                        <button class="period-btn active" data-period="7" onclick="setPeriod(7,  this)">7d</button>
-                        <button class="period-btn" data-period="30" onclick="setPeriod(30, this)">30d</button>
-                    </div>
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i class="fa-solid fa-sun" id="theme-icon"></i>
+                    </button>
 
                     <div class="notif-btn" title="Notifications">
                         <i class="fa-regular fa-bell"></i>
@@ -70,6 +68,10 @@
 
             <!-- Page body -->
             <main class="page-body" id="page-body">
+
+                <div class="topbar-title" style="margin-bottom:16px; font-style: italic;">
+                    <h1>Dashboard > Home</h1>
+                </div>
 
                 <!-- Page header -->
                 <div class="page-header">
@@ -203,14 +205,22 @@
                                     <div class="chart-card-title">Stock Movement</div>
                                     <div class="chart-card-sub" id="chart-period-label">Last 7 days</div>
                                 </div>
-                                <div class="chart-legend">
-                                    <div class="legend-item">
-                                        <div class="legend-dot" style="background:#1d4ed8;"></div>
-                                        Stock In
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div class="period-toggle" id="period-toggle">
+                                        <button class="period-btn active" data-period="7"
+                                            onclick="setPeriod(7,  this)">7d</button>
+                                        <button class="period-btn" data-period="30"
+                                            onclick="setPeriod(30, this)">30d</button>
                                     </div>
-                                    <div class="legend-item">
-                                        <div class="legend-dot" style="background:#e2e8f0;"></div>
-                                        Stock Out
+                                    <div class="chart-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background:#1d4ed8;"></div>
+                                            Stock In
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background:#e2e8f0;"></div>
+                                            Stock Out
+                                        </div>
                                     </div>
                                 </div>
                             </div>

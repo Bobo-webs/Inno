@@ -37,8 +37,10 @@
     --card: #1e293b;
     --border: #334155;
     --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #475569;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Reset ── */
