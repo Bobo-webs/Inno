@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inno Inventory — Auth</title>
+    <title>Inno Inventory</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -21,10 +21,8 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/toast.js"></script>
-    <script src="assets/js/supabase.js"></script>
-    <script src="assets/js/auth-guard.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <script src="./assets/js/toast.js"></script>
+    <script src="./assets/js/supabase.js"></script>
 </head>
 
 <body>
@@ -226,7 +224,6 @@
 
     <!-- ===== SCRIPTS ===== -->
     <script>
-
         /* ── Tab switcher ── */
         window.switchTab = function (tab) {
             const isSignin = tab === 'signin';
@@ -256,9 +253,6 @@
                 setTimeout(() => document.getElementById('access-denied-banner').classList.remove('show'), 6000);
             }
         })();
-
-
-
 
 
         /* ── Sign In handler ── */
@@ -343,16 +337,16 @@
             btn.innerHTML = '<div class="btn-spinner"></div><span>Creating account...</span>';
             showToast('Creating your account...', 'info');
 
-            const { data: existing } = await db
-                .from('users').select('id').eq('username', username).maybeSingle();
-            if (existing) {
-                showToast('Username already taken. Please choose another.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
-                return;
-            }
-
-            const { data, error } = await db.auth.signUp({ email, password });
+            const { data, error } = await db.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                        username: username
+                    }
+                }
+            });
 
             if (error) {
                 showToast(error.message || 'Sign up failed. Please try again.', 'error');
@@ -361,7 +355,7 @@
                 return;
             }
 
-            await db.from('users').insert({
+            const { error: insertError } = await db.from('users').insert({
                 id: data.user.id,
                 full_name: fullName,
                 username: username,
@@ -371,17 +365,27 @@
                 created_at: new Date().toISOString()
             });
 
+            if (insertError) {
+                await db.auth.signOut();
+                if (insertError.code === '23505') {
+                    showToast('Username already taken. Please choose another.', 'error');
+                } else {
+                    showToast('Account creation failed. Please try again.', 'error');
+                }
+                btn.disabled = false;
+                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+                return;
+            }
+
             showToast('Account created! An admin will assign your role.', 'success');
             btn.disabled = false;
             btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
 
-            // Switch to sign in and pre-fill email
             switchTab('signin');
             document.getElementById('signin-email').value = email;
             ['signup-name', 'signup-username', 'signup-email', 'signup-password', 'signup-confirm']
                 .forEach(id => { document.getElementById(id).value = ''; });
         };
-
 
         /* ── Enter key support ── */
         document.addEventListener('keydown', function (e) {
@@ -392,6 +396,17 @@
                 handleSignUp();
             }
         });
+
+        /* ── Session check ── */
+        (async function () {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) return;
+            const { data: profile } = await db
+                .from('users').select('role').eq('id', session.user.id).single();
+            if (profile && profile.role !== 'guest') {
+                window.location.href = '/dashboard/home.html';
+            }
+        })();
 
     </script>
 
