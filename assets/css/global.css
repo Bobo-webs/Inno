@@ -163,3 +163,29 @@ textarea {
         transform: rotate(360deg);
     }
 }
+
+/* ======= REMOVE LIGHT BLUE HIGHLIGHTS ONCLICK ======== */
+* {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+}
+
+a,
+img,
+button,
+input {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a,
+img,
+button,
+input {
+    outline: none !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    -moz-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    -ms-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    tap-highlight-color: rgba(0, 0, 0, 0) !important;
+}
