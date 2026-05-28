@@ -84,6 +84,12 @@
     margin-top: 2px;
 }
 
+@media (min-width: 901px) {
+    .auth-brand-right {
+        display: none;
+    }
+}
+
 /* ── Illustration cards ── */
 .auth-illustration {
     flex: 1;

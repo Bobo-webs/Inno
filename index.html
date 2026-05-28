@@ -91,6 +91,15 @@
         <div class="auth-right">
             <div class="auth-card">
 
+                <!-- Brand -->
+                <div class="auth-brand auth-brand-right" style="margin-bottom: 2rem;">
+                    <div class="auth-brand-logo" style="background:var(--primary) !important;">I</div>
+                    <div>
+                        <div class="auth-brand-name" style="color:#000 !important;">Inno</div>
+                        <div class="auth-brand-sub" style="color:#000 !important;">Inventory Management</div>
+                    </div>
+                </div>
+
                 <!-- Tab Switcher -->
                 <div class="auth-tabs" role="tablist">
                     <button class="auth-tab active" id="tab-signin" role="tab" onclick="switchTab('signin')">Sign
@@ -300,7 +309,7 @@
                 return;
             }
 
-            showToast(`Welcome back, @${profile.username}!`, 'success');
+            showToast(`Welcome back, ${profile.username}!`, 'success');
             setTimeout(() => { window.location.href = '/dashboard/home.html'; }, 1000);
         };
 
