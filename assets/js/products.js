@@ -6,16 +6,16 @@
    ============================================================ */
 
 /* ── State ── */
-let allProducts    = [];
-let allCategories  = [];
-let filteredProducts   = [];
+let allProducts = [];
+let allCategories = [];
+let filteredProducts = [];
 let filteredCategories = [];
-let currentTab     = 'products';
-let currentPage    = 1;
-const PAGE_SIZE    = 15;
-let deleteTarget   = { type: null, id: null, name: null };
-let userRole       = null;
-let canEdit        = false;
+let currentTab = 'products';
+let currentPage = 1;
+const PAGE_SIZE = 15;
+let deleteTarget = { type: null, id: null, name: null };
+let userRole = null;
+let canEdit = false;
 
 /* ── Helpers ── */
 function getInitials(name) {
@@ -61,9 +61,10 @@ window.toggleTheme = function () {
 /* ── Tab switcher ── */
 window.switchTab = function (tab) {
     currentTab = tab;
-    document.getElementById('panel-products').style.display   = tab === 'products'   ? 'block' : 'none';
+    localStorage.setItem('inno-products-tab', tab);
+    document.getElementById('panel-products').style.display = tab === 'products' ? 'block' : 'none';
     document.getElementById('panel-categories').style.display = tab === 'categories' ? 'block' : 'none';
-    document.getElementById('tab-products').classList.toggle('active',   tab === 'products');
+    document.getElementById('tab-products').classList.toggle('active', tab === 'products');
     document.getElementById('tab-categories').classList.toggle('active', tab === 'categories');
     updateHeaderActions();
 
@@ -131,7 +132,7 @@ async function loadProducts() {
 /* ── Filter products ── */
 window.filterProducts = function () {
     const search = document.getElementById('products-search').value.toLowerCase();
-    const cat    = document.getElementById('products-cat-filter').value;
+    const cat = document.getElementById('products-cat-filter').value;
     const status = document.getElementById('products-status-filter').value;
 
     filteredProducts = allProducts.filter(p => {
@@ -141,7 +142,7 @@ window.filterProducts = function () {
         const matchCat = !cat || p.categories?.name === cat;
         const matchStatus =
             !status ||
-            (status === 'in'  && p.quantity > p.reorder_level) ||
+            (status === 'in' && p.quantity > p.reorder_level) ||
             (status === 'low' && p.quantity > 0 && p.quantity <= p.reorder_level) ||
             (status === 'out' && p.quantity <= 0);
         return matchSearch && matchCat && matchStatus;
@@ -153,7 +154,7 @@ window.filterProducts = function () {
 
 /* ── Render products table ── */
 function renderProductsTable() {
-    const tbody  = document.getElementById('products-tbody');
+    const tbody = document.getElementById('products-tbody');
     const footer = document.getElementById('products-footer');
 
     if (!filteredProducts.length) {
@@ -170,17 +171,17 @@ function renderProductsTable() {
         return;
     }
 
-    const total  = filteredProducts.length;
-    const pages  = Math.ceil(total / PAGE_SIZE);
-    const start  = (currentPage - 1) * PAGE_SIZE;
-    const paged  = filteredProducts.slice(start, start + PAGE_SIZE);
+    const total = filteredProducts.length;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const paged = filteredProducts.slice(start, start + PAGE_SIZE);
 
     const showCost = userRole !== 'staff';
 
     tbody.innerHTML = paged.map((p, i) => {
         const initials = (p.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-        const catName  = p.categories?.name || '—';
-        const actions  = canEdit ? `
+        const catName = p.categories?.name || '—';
+        const actions = canEdit ? `
             <div class="action-btns">
                 <button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
@@ -244,9 +245,9 @@ window.goPage = function (page) {
 
 /* ── Product Drawer ── */
 window.openProductDrawer = async function (productId = null) {
-    document.getElementById('product-id').value        = productId || '';
+    document.getElementById('product-id').value = productId || '';
     document.getElementById('product-drawer-title').textContent = productId ? 'Edit Product' : 'Add Product';
-    document.getElementById('product-drawer-sub').textContent   = productId ? 'Update product details' : 'Fill in the product details below';
+    document.getElementById('product-drawer-sub').textContent = productId ? 'Update product details' : 'Fill in the product details below';
 
     /* Populate category dropdown */
     const catSelect = document.getElementById('product-category');
@@ -256,19 +257,19 @@ window.openProductDrawer = async function (productId = null) {
     if (productId) {
         const product = allProducts.find(p => p.id === productId);
         if (product) {
-            document.getElementById('product-name').value    = product.name || '';
-            document.getElementById('product-sku').value     = product.sku || '';
-            document.getElementById('product-desc').value    = product.description || '';
+            document.getElementById('product-name').value = product.name || '';
+            document.getElementById('product-sku').value = product.sku || '';
+            document.getElementById('product-desc').value = product.description || '';
             document.getElementById('product-category').value = product.category_id || '';
-            document.getElementById('product-unit').value    = product.unit || '';
-            document.getElementById('product-qty').value     = product.quantity || 0;
+            document.getElementById('product-unit').value = product.unit || '';
+            document.getElementById('product-qty').value = product.quantity || 0;
             document.getElementById('product-reorder').value = product.reorder_level || 0;
-            document.getElementById('product-cost').value    = product.unit_cost || 0;
+            document.getElementById('product-cost').value = product.unit_cost || 0;
         }
     } else {
         /* Clear form */
-        ['product-name','product-sku','product-desc','product-category',
-         'product-unit','product-qty','product-reorder','product-cost']
+        ['product-name', 'product-sku', 'product-desc', 'product-category',
+            'product-unit', 'product-qty', 'product-reorder', 'product-cost']
             .forEach(id => { document.getElementById(id).value = ''; });
     }
 
@@ -285,23 +286,23 @@ window.closeProductDrawer = function () {
 };
 
 window.saveProduct = async function () {
-    const id       = document.getElementById('product-id').value;
-    const name     = document.getElementById('product-name').value.trim();
-    const sku      = document.getElementById('product-sku').value.trim();
-    const desc     = document.getElementById('product-desc').value.trim();
-    const catId    = document.getElementById('product-category').value;
-    const unit     = document.getElementById('product-unit').value;
-    const qty      = parseInt(document.getElementById('product-qty').value) || 0;
-    const reorder  = parseInt(document.getElementById('product-reorder').value) || 0;
-    const cost     = parseFloat(document.getElementById('product-cost').value) || 0;
-    const btn      = document.getElementById('product-save-btn');
+    const id = document.getElementById('product-id').value;
+    const name = document.getElementById('product-name').value.trim();
+    const sku = document.getElementById('product-sku').value.trim();
+    const desc = document.getElementById('product-desc').value.trim();
+    const catId = document.getElementById('product-category').value;
+    const unit = document.getElementById('product-unit').value;
+    const qty = parseInt(document.getElementById('product-qty').value) || 0;
+    const reorder = parseInt(document.getElementById('product-reorder').value) || 0;
+    const cost = parseFloat(document.getElementById('product-cost').value) || 0;
+    const btn = document.getElementById('product-save-btn');
 
-    if (!name)  { showToast('Product name is required.', 'error'); return; }
+    if (!name) { showToast('Product name is required.', 'error'); return; }
     if (!catId) { showToast('Please select a category.', 'error'); return; }
-    if (!unit)  { showToast('Please select a unit of measurement.', 'error'); return; }
-    if (qty < 0){ showToast('Quantity cannot be negative.', 'error'); return; }
+    if (!unit) { showToast('Please select a unit of measurement.', 'error'); return; }
+    if (qty < 0) { showToast('Quantity cannot be negative.', 'error'); return; }
 
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
 
     const payload = {
@@ -317,15 +318,15 @@ window.saveProduct = async function () {
         ({ error } = await db.from('products').update(payload).eq('id', id));
     } else {
         /* Insert */
-        payload.quantity   = qty;
-        payload.is_active  = true;
+        payload.quantity = qty;
+        payload.is_active = true;
         payload.created_by = window.currentUser.id;
         ({ error } = await db.from('products').insert(payload));
     }
 
     if (error) {
         showToast(error.message || 'Failed to save product.', 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Product</span>';
         return;
     }
@@ -333,7 +334,7 @@ window.saveProduct = async function () {
     showToast(id ? 'Product updated successfully.' : 'Product added successfully.', 'success');
     closeProductDrawer();
     await loadProducts();
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Product</span>';
 };
 
@@ -342,8 +343,8 @@ window.exportProducts = function () {
     if (!filteredProducts.length) { showToast('No products to export.', 'error'); return; }
 
     const showCost = userRole !== 'staff';
-    const headers  = ['Name', 'SKU', 'Category', 'Unit', 'Quantity', 'Reorder Level', ...(showCost ? ['Unit Cost'] : []), 'Status'];
-    const rows     = filteredProducts.map(p => [
+    const headers = ['Name', 'SKU', 'Category', 'Unit', 'Quantity', 'Reorder Level', ...(showCost ? ['Unit Cost'] : []), 'Status'];
+    const rows = filteredProducts.map(p => [
         p.name, p.sku || '', p.categories?.name || '', p.unit || '',
         p.quantity, p.reorder_level,
         ...(showCost ? [p.unit_cost || 0] : []),
@@ -352,9 +353,9 @@ window.exportProducts = function () {
 
     const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = `products-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
@@ -388,7 +389,7 @@ window.filterCategories = function () {
 };
 
 function renderCategoriesTable() {
-    const tbody  = document.getElementById('categories-tbody');
+    const tbody = document.getElementById('categories-tbody');
     const footer = document.getElementById('categories-footer');
 
     if (!filteredCategories.length) {
@@ -435,7 +436,7 @@ function renderCategoriesTable() {
 
 /* ── Category Modal ── */
 window.openCatModal = function (catId = null) {
-    document.getElementById('cat-id').value    = catId || '';
+    document.getElementById('cat-id').value = catId || '';
     document.getElementById('cat-modal-title').textContent = catId ? 'Edit Category' : 'Add Category';
 
     if (catId) {
@@ -458,14 +459,14 @@ window.closeCatModal = function () {
 };
 
 window.saveCategory = async function () {
-    const id   = document.getElementById('cat-id').value;
+    const id = document.getElementById('cat-id').value;
     const name = document.getElementById('cat-name').value.trim();
     const desc = document.getElementById('cat-desc').value.trim();
-    const btn  = document.getElementById('cat-save-btn');
+    const btn = document.getElementById('cat-save-btn');
 
     if (!name) { showToast('Category name is required.', 'error'); return; }
 
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
 
     const payload = { name, description: desc || null };
@@ -484,7 +485,7 @@ window.saveCategory = async function () {
         } else {
             showToast(error.message || 'Failed to save category.', 'error');
         }
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Category</span>';
         return;
     }
@@ -493,7 +494,7 @@ window.saveCategory = async function () {
     closeCatModal();
     await loadCategories();
     await loadProducts(); /* Refresh products to update category names */
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Category</span>';
 };
 
@@ -519,7 +520,7 @@ window.closeDeleteModal = function () {
 
 window.confirmDelete = async function () {
     const btn = document.getElementById('delete-confirm-btn');
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Deleting...</span>';
 
     let error;
@@ -539,7 +540,7 @@ window.confirmDelete = async function () {
 
     if (error) {
         showToast(error.message || 'Failed to delete. Try again.', 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Delete</span>';
         return;
     }
@@ -554,7 +555,7 @@ window.confirmDelete = async function () {
         await loadProducts();
     }
 
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Delete</span>';
 };
 
@@ -591,12 +592,12 @@ document.addEventListener('keydown', function (e) {
     }
 
     userRole = window.currentUser.role;
-    canEdit  = ['root_admin', 'manager', 'accountant'].includes(userRole);
+    canEdit = ['root_admin', 'manager', 'accountant'].includes(userRole);
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
-    document.getElementById('topbar-avatar').textContent   = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-avatar').textContent = initials;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Theme */
     applyTheme(localStorage.getItem('inno-theme') || 'light');
@@ -606,10 +607,10 @@ document.addEventListener('keydown', function (e) {
 
     /* Role UI adjustments */
     if (!canEdit) {
-        document.getElementById('products-readonly-notice').style.display   = 'flex';
+        document.getElementById('products-readonly-notice').style.display = 'flex';
         document.getElementById('categories-readonly-notice').style.display = 'flex';
-        document.getElementById('products-actions-col').style.display       = 'none';
-        document.getElementById('categories-actions-col').style.display     = 'none';
+        document.getElementById('products-actions-col').style.display = 'none';
+        document.getElementById('categories-actions-col').style.display = 'none';
     }
 
     /* Hide cost column for staff */
@@ -622,6 +623,8 @@ document.addEventListener('keydown', function (e) {
 
     /* Update header */
     updateHeaderActions();
+    const savedTab = localStorage.getItem('inno-products-tab') || 'products';
+    switchTab(savedTab);
 
     /* Check URL filter param */
     const filter = new URLSearchParams(window.location.search).get('filter');

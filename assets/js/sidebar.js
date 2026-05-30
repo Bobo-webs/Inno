@@ -8,7 +8,7 @@ const SIDEBAR_NAV = [
                 label: 'Home',
                 icon: 'fa-solid fa-house',
                 href: 'dashboard/home.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant', 'viewer']
+                roles: ['root_admin', 'manager', 'staff', 'accountant']
             }
         ]
     },
@@ -20,14 +20,7 @@ const SIDEBAR_NAV = [
                 label: 'Products',
                 icon: 'fa-solid fa-boxes-stacked',
                 href: 'dashboard/inventory/products.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant', 'viewer']
-            },
-            {
-                key: 'categories',
-                label: 'Categories',
-                icon: 'fa-solid fa-tag',
-                href: 'dashboard/inventory/categories.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant', 'viewer']
+                roles: ['root_admin', 'manager', 'staff', 'accountant']
             }
         ]
     },
@@ -53,7 +46,7 @@ const SIDEBAR_NAV = [
                 label: 'Stock History',
                 icon: 'fa-solid fa-clock-rotate-left',
                 href: 'dashboard/stock/history.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant', 'viewer']
+                roles: ['root_admin', 'manager', 'staff', 'accountant']
             }
         ]
     },
@@ -65,7 +58,7 @@ const SIDEBAR_NAV = [
                 label: 'Purchase Orders',
                 icon: 'fa-solid fa-file-invoice',
                 href: 'dashboard/purchase-orders.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant', 'viewer']
+                roles: ['root_admin', 'manager', 'staff', 'accountant']
             },
             {
                 key: 'suppliers',
@@ -110,7 +103,6 @@ const ROLE_LABELS = {
     manager: 'Manager',
     staff: 'Staff',
     accountant: 'Accountant',
-    viewer: 'Viewer',
     guest: 'Guest'
 };
 

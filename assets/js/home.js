@@ -42,9 +42,14 @@ function populateUserUI() {
     document.getElementById('topbar-username').textContent = '' + user.username;
     document.getElementById('greeting').textContent = getGreeting() + ', ' + (user.full_name?.split(' ')[0] || user.username) + ' 👋';
 
-    /* Restrict stock value card for staff/viewer */
+    /* Date */
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-GB', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    /* Restrict stock value card for staff */
     const role = user.role;
-    if (role === 'staff' || role === 'viewer') {
+    if (role === 'staff') {
         const card = document.getElementById('card-value');
         card.style.display = 'block';
         card.classList.add('stat-card--restricted');
@@ -61,7 +66,7 @@ async function loadDashboard() {
 
         /* ── 1. Products stats ── */
         const role = window.currentUser.role;
-        const selectFields = (role === 'staff' || role === 'viewer')
+        const selectFields = (role === 'staff')
             ? 'id, quantity, reorder_level, is_active'
             : 'id, quantity, reorder_level, unit_cost, is_active';
 
@@ -75,7 +80,7 @@ async function loadDashboard() {
         const outOfStock = products?.filter(p => p.quantity <= 0).length || 0;
 
         let stockValue = 0;
-        if (user.role !== 'staff' && user.role !== 'viewer') {
+        if (user.role !== 'staff') {
             stockValue = products?.reduce((sum, p) => sum + ((p.quantity || 0) * (p.unit_cost || 0)), 0) || 0;
         }
 

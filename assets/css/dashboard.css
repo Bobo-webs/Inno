@@ -425,7 +425,7 @@
     color: #fca5a5;
 }
 
-/* ── Restricted card (staff/viewer cannot see value) ── */
+/* ── Restricted card (staff cannot see value) ── */
 .stat-card--restricted {
     position: relative;
     overflow: hidden;
