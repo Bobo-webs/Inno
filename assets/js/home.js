@@ -42,11 +42,6 @@ function populateUserUI() {
     document.getElementById('topbar-username').textContent = '' + user.username;
     document.getElementById('greeting').textContent = getGreeting() + ', ' + (user.full_name?.split(' ')[0] || user.username) + ' 👋';
 
-    /* Date */
-    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-GB', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-
     /* Restrict stock value card for staff/viewer */
     const role = user.role;
     if (role === 'staff' || role === 'viewer') {

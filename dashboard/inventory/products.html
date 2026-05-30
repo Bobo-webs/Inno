@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inno — Products & Categories</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+
+</head>
+
+<body>
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrap">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+        <div class="topbar-title">
+          <!-- <h1>Inventory</h1>
+          <p>Manage products and categories</p> -->
+          <p id="topbar-date"></p>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i class="fa-solid fa-sun" id="theme-icon"></i>
+          </button>
+          <div class="topbar-user">
+            <div class="topbar-avatar" id="topbar-avatar">--</div>
+            <span class="topbar-username" id="topbar-username">...</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page body -->
+      <main class="page-body">
+
+        <!-- Page header -->
+        <div class="page-header">
+          <div class="page-header-text">
+            <h2>Products & Categories</h2>
+            <p>Track every item and organise your inventory structure</p>
+          </div>
+          <div class="page-header-actions" id="header-actions">
+            <!-- Populated by JS based on active tab + role -->
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-products" onclick="switchTab('products')">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            Products
+            <span class="tab-count" id="products-count">0</span>
+          </button>
+          <button class="tab-btn" id="tab-categories" onclick="switchTab('categories')">
+            <i class="fa-solid fa-tag"></i>
+            Categories
+            <span class="tab-count" id="categories-count">0</span>
+          </button>
+        </div>
+
+        <!-- ══ PRODUCTS PANEL ══ -->
+        <div id="panel-products">
+
+          <!-- Read-only notice for staff -->
+          <div class="readonly-notice" id="products-readonly-notice" style="display:none;">
+            <i class="fa-solid fa-circle-info"></i>
+            You have read-only access to products.
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="products-search" placeholder="Search products..."
+                oninput="filterProducts()">
+            </div>
+            <select class="filter-select" id="products-cat-filter" onchange="filterProducts()">
+              <option value="">All Categories</option>
+            </select>
+            <select class="filter-select" id="products-status-filter" onchange="filterProducts()">
+              <option value="">All Status</option>
+              <option value="in">In Stock</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out of Stock</option>
+            </select>
+            <div class="toolbar-right">
+              <button class="btn btn-outline btn-sm" onclick="exportProducts()">
+                <i class="fa-solid fa-file-excel"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-card">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Unit</th>
+                    <th>Qty</th>
+                    <th>Reorder</th>
+                    <th id="cost-col-header">Unit Cost</th>
+                    <th>Status</th>
+                    <th id="products-actions-col"></th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody">
+                  <!-- Skeleton -->
+                  <tr class="sk-row">
+                    <td>
+                      <div class="skeleton" style="height:14px;width:140px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:80px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:50px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:60px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr class="sk-row">
+                    <td>
+                      <div class="skeleton" style="height:14px;width:120px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:90px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:50px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:60px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr class="sk-row">
+                    <td>
+                      <div class="skeleton" style="height:14px;width:160px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:70px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:50px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:60px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer" id="products-footer" style="display:none;">
+              <span class="table-info" id="products-info"></span>
+              <div class="pagination" id="products-pagination"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ CATEGORIES PANEL ══ -->
+        <div id="panel-categories" style="display:none;">
+
+          <!-- Read-only notice for staff -->
+          <div class="readonly-notice" id="categories-readonly-notice" style="display:none;">
+            <i class="fa-solid fa-circle-info"></i>
+            You have read-only access to categories.
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="categories-search" placeholder="Search categories..."
+                oninput="filterCategories()">
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-card">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category Name</th>
+                    <th>Description</th>
+                    <th>Products</th>
+                    <th id="categories-actions-col"></th>
+                  </tr>
+                </thead>
+                <tbody id="categories-tbody">
+                  <tr class="sk-row">
+                    <td>
+                      <div class="skeleton" style="height:14px;width:120px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:200px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr class="sk-row">
+                    <td>
+                      <div class="skeleton" style="height:14px;width:100px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:180px;"></div>
+                    </td>
+                    <td>
+                      <div class="skeleton" style="height:14px;width:40px;"></div>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer" id="categories-footer" style="display:none;">
+              <span class="table-info" id="categories-info"></span>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ══ PRODUCT DRAWER ══ -->
+  <div class="drawer-backdrop" id="product-drawer-backdrop" onclick="closeProductDrawer()"></div>
+  <div class="drawer" id="product-drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title" id="product-drawer-title">Add Product</div>
+        <div class="drawer-sub" id="product-drawer-sub">Fill in the product details below</div>
+      </div>
+      <button class="drawer-close" onclick="closeProductDrawer()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <input type="hidden" id="product-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Product Name <span>*</span></label>
+          <input type="text" class="form-control" id="product-name" placeholder="e.g. Gasket Ring A4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SKU / Code</label>
+          <input type="text" class="form-control" id="product-sku" placeholder="e.g. GSK-001">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="product-desc" placeholder="Optional product description..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category <span>*</span></label>
+          <select class="form-control" id="product-category">
+            <option value="">Select category</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit of Measurement <span>*</span></label>
+          <select class="form-control" id="product-unit">
+            <option value="">Select unit</option>
+            <option value="Pieces">Pieces</option>
+            <option value="Kg">Kg</option>
+            <option value="Litres">Litres</option>
+            <option value="Cartons">Cartons</option>
+            <option value="Bags">Bags</option>
+            <option value="Metres">Metres</option>
+            <option value="Sets">Sets</option>
+            <option value="Pairs">Pairs</option>
+            <option value="Rolls">Rolls</option>
+            <option value="Boxes">Boxes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Initial Quantity <span>*</span></label>
+          <input type="number" class="form-control" id="product-qty" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reorder Level <span>*</span></label>
+          <input type="number" class="form-control" id="product-reorder" placeholder="0" min="0">
+          <div class="form-hint">Alert triggers when qty reaches this level</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unit Cost ($) <span>*</span></label>
+        <input type="number" class="form-control" id="product-cost" placeholder="0.00" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-outline" onclick="closeProductDrawer()">Cancel</button>
+      <button class="btn btn-primary" id="product-save-btn" onclick="saveProduct()">
+        <i class="fa-solid fa-check"></i>
+        <span>Save Product</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ CATEGORY MODAL ══ -->
+  <div class="modal-backdrop" id="cat-modal-backdrop">
+    <div class="modal">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div
+          style="width:40px;height:40px;border-radius:10px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+          <i class="fa-solid fa-tag"></i>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text-primary);" id="cat-modal-title">Add Category</div>
+          <div style="font-size:12px;color:var(--text-muted);">Categories help organise your products</div>
+        </div>
+      </div>
+      <input type="hidden" id="cat-id">
+      <div class="form-group">
+        <label class="form-label">Category Name <span>*</span></label>
+        <input type="text" class="form-control" id="cat-name" placeholder="e.g. Gaskets">
+      </div>
+      <div class="form-group" style="margin-bottom:24px;">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="cat-desc" placeholder="Optional description..."
+          style="min-height:70px;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeCatModal()">Cancel</button>
+        <button class="btn btn-primary" id="cat-save-btn" onclick="saveCategory()">
+          <i class="fa-solid fa-check"></i>
+          <span>Save Category</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DELETE CONFIRM MODAL ══ -->
+  <div class="modal-backdrop" id="delete-modal-backdrop">
+    <div class="modal">
+      <div class="modal-icon"><i class="fa-solid fa-trash"></i></div>
+      <h3 id="delete-modal-title">Delete Product?</h3>
+      <p id="delete-modal-body">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">
+          <i class="fa-solid fa-trash"></i>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../assets/js/toast.js"></script>
+  <script src="../../assets/js/supabase.js"></script>
+  <script src="../../assets/js/auth-guard.js"></script>
+  <script src="../../assets/js/sidebar.js"></script>
+  <script src="../../assets/js/products.js"></script>
+</body>
+
+</html>
