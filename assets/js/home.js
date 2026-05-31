@@ -68,7 +68,7 @@ async function loadDashboard() {
         const role = window.currentUser.role;
         const selectFields = (role === 'staff')
             ? 'id, quantity, reorder_level, is_active'
-            : 'id, quantity, reorder_level, unit_cost, is_active';
+            : 'id, quantity, reorder_level, is_active';
 
         const { data: products } = await db
             .from('products')

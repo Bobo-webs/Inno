@@ -1,9 +1,4 @@
-/* ============================================================
-   assets/js/products.js
-   Handles Products + Categories page logic
-   Roles: root_admin, manager, accountant — full CRUD
-          staff — read-only
-   ============================================================ */
+/* ==== PRODUCTS.JS ==== */
 
 /* ── State ── */
 let allProducts = [];
@@ -23,11 +18,6 @@ function getInitials(name) {
     const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length === 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function formatCurrency(val) {
-    if (!val && val !== 0) return '—';
-    return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function getStatusBadge(product) {
@@ -96,15 +86,11 @@ function updateHeaderActions() {
     }
 }
 
-/* ════════════════════════════════════════
-   PRODUCTS
-════════════════════════════════════════ */
+/* ═══════ PRODUCTS ═══════ */
 
 /* ── Fetch products ── */
 async function loadProducts() {
-    const selectFields = (userRole === 'staff')
-        ? 'id, name, sku, quantity, reorder_level, is_active, category_id, unit, categories(name)'
-        : 'id, name, sku, quantity, reorder_level, unit_cost, is_active, category_id, unit, categories(name)';
+    const selectFields = 'id, name, sku, description, quantity, reorder_level, is_active, category_id, unit, categories(name)';
 
     const { data, error } = await db
         .from('products')
@@ -176,8 +162,6 @@ function renderProductsTable() {
     const start = (currentPage - 1) * PAGE_SIZE;
     const paged = filteredProducts.slice(start, start + PAGE_SIZE);
 
-    const showCost = userRole !== 'staff';
-
     tbody.innerHTML = paged.map((p, i) => {
         const initials = (p.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
         const catName = p.categories?.name || '—';
@@ -206,7 +190,6 @@ function renderProductsTable() {
                 <td style="color:var(--text-secondary);font-size:12.5px;">${p.unit || '—'}</td>
                 <td><span class="qty-cell ${getQtyClass(p)}">${p.quantity.toLocaleString()}</span></td>
                 <td style="color:var(--text-muted);font-size:12.5px;">${p.reorder_level}</td>
-                ${showCost ? `<td style="font-weight:600;font-size:13px;">${formatCurrency(p.unit_cost)}</td>` : ''}
                 <td>${getStatusBadge(p)}</td>
                 <td>${actions}</td>
             </tr>`;
@@ -264,12 +247,11 @@ window.openProductDrawer = async function (productId = null) {
             document.getElementById('product-unit').value = product.unit || '';
             document.getElementById('product-qty').value = product.quantity || 0;
             document.getElementById('product-reorder').value = product.reorder_level || 0;
-            document.getElementById('product-cost').value = product.unit_cost || 0;
         }
     } else {
         /* Clear form */
         ['product-name', 'product-sku', 'product-desc', 'product-category',
-            'product-unit', 'product-qty', 'product-reorder', 'product-cost']
+            'product-unit', 'product-qty', 'product-reorder']
             .forEach(id => { document.getElementById(id).value = ''; });
     }
 
@@ -294,7 +276,6 @@ window.saveProduct = async function () {
     const unit = document.getElementById('product-unit').value;
     const qty = parseInt(document.getElementById('product-qty').value) || 0;
     const reorder = parseInt(document.getElementById('product-reorder').value) || 0;
-    const cost = parseFloat(document.getElementById('product-cost').value) || 0;
     const btn = document.getElementById('product-save-btn');
 
     if (!name) { showToast('Product name is required.', 'error'); return; }
@@ -308,7 +289,7 @@ window.saveProduct = async function () {
     const payload = {
         name, sku: sku || null, description: desc || null,
         category_id: catId, unit, reorder_level: reorder,
-        unit_cost: cost, updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString()
     };
 
     let error;
@@ -342,12 +323,10 @@ window.saveProduct = async function () {
 window.exportProducts = function () {
     if (!filteredProducts.length) { showToast('No products to export.', 'error'); return; }
 
-    const showCost = userRole !== 'staff';
-    const headers = ['Name', 'SKU', 'Category', 'Unit', 'Quantity', 'Reorder Level', ...(showCost ? ['Unit Cost'] : []), 'Status'];
+    const headers = ['Name', 'SKU', 'Category', 'Unit', 'Quantity', 'Reorder Level', 'Status'];
     const rows = filteredProducts.map(p => [
         p.name, p.sku || '', p.categories?.name || '', p.unit || '',
         p.quantity, p.reorder_level,
-        ...(showCost ? [p.unit_cost || 0] : []),
         p.quantity <= 0 ? 'Out of Stock' : p.quantity <= p.reorder_level ? 'Low Stock' : 'In Stock'
     ]);
 
@@ -362,9 +341,7 @@ window.exportProducts = function () {
     showToast('Products exported successfully.', 'success');
 };
 
-/* ════════════════════════════════════════
-   CATEGORIES
-════════════════════════════════════════ */
+/* ═══════ CATEGORIES ═══════ */
 
 async function loadCategories() {
     const { data, error } = await db
@@ -498,9 +475,7 @@ window.saveCategory = async function () {
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Category</span>';
 };
 
-/* ════════════════════════════════════════
-   DELETE
-════════════════════════════════════════ */
+/* ═══════ DELETE ═══════ */
 
 window.openDeleteModal = function (type, id, name) {
     deleteTarget = { type, id, name };
@@ -576,11 +551,8 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ═══════ INIT ═══════ */
 (async function init() {
-    /* Wait for auth-guard */
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
         await new Promise(r => setTimeout(r, 50));
@@ -611,11 +583,6 @@ document.addEventListener('keydown', function (e) {
         document.getElementById('categories-readonly-notice').style.display = 'flex';
         document.getElementById('products-actions-col').style.display = 'none';
         document.getElementById('categories-actions-col').style.display = 'none';
-    }
-
-    /* Hide cost column for staff */
-    if (userRole === 'staff') {
-        document.getElementById('cost-col-header').style.display = 'none';
     }
 
     /* Load data */

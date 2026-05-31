@@ -11,6 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+  <script>
+    (function () {
+      const theme = localStorage.getItem('inno-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 
   <link rel="stylesheet" href="../../assets/css/global.css">
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
@@ -115,7 +121,6 @@
                     <th>Unit</th>
                     <th>Qty</th>
                     <th>Reorder</th>
-                    <th id="cost-col-header">Unit Cost</th>
                     <th>Status</th>
                     <th id="products-actions-col"></th>
                   </tr>
@@ -334,10 +339,6 @@
           <input type="number" class="form-control" id="product-reorder" placeholder="0" min="0">
           <div class="form-hint">Alert triggers when qty reaches this level</div>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Unit Cost ($) <span>*</span></label>
-        <input type="number" class="form-control" id="product-cost" placeholder="0.00" min="0" step="0.01">
       </div>
     </div>
     <div class="drawer-footer">
