@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inno — Receive Stock</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <script>
+    (function () {
+      const theme = localStorage.getItem('inno-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+
+</head>
+
+<body>
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrap">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+        <div class="topbar-title">
+          <p id="topbar-date"></p>
+        </div>
+        <div class="topbar-right">
+          <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i class="fa-solid fa-sun" id="theme-icon"></i>
+          </button>
+          <div class="topbar-user">
+            <div class="topbar-avatar" id="topbar-avatar">--</div>
+            <span class="topbar-username" id="topbar-username">...</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page body -->
+      <main class="page-body" id="page-body">
+
+        <!-- Page header -->
+        <div class="page-header">
+          <div class="page-header-text">
+            <h2>Receive Stock</h2>
+            <p>Log every incoming delivery — all entries are signed and timestamped</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="exportReceives()">
+              <i class="fa-solid fa-file-excel"></i> Export
+            </button>
+            <button class="btn btn-primary" onclick="openReceiveDrawer()">
+              <i class="fa-solid fa-plus"></i> Receive Stock
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary chips -->
+        <div class="summary-chips" id="summary-chips" style="display:none;">
+          <div class="chip">
+            <i class="fa-solid fa-truck-ramp-box"></i>
+            <span id="chip-total">0 entries</span>
+          </div>
+          <div class="chip chip-success">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span id="chip-qty">0 units received</span>
+          </div>
+          <div class="chip chip-blue">
+            <i class="fa-solid fa-dollar-sign"></i>
+            <span id="chip-value">$0.00 total value</span>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="search-input" id="history-search" placeholder="Search by product or supplier..."
+              oninput="filterHistory()">
+          </div>
+          <select class="filter-select" id="supplier-filter" onchange="filterHistory()">
+            <option value="">All Suppliers</option>
+          </select>
+          <select class="filter-select" id="date-filter" onchange="filterHistory()">
+            <option value="">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Supplier</th>
+                  <th>Qty Received</th>
+                  <th>Unit Cost</th>
+                  <th>Total Value</th>
+                  <th>Delivery Date</th>
+                  <th>Received By</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Skeleton rows -->
+                <tr class="sk-row">
+                  <td>
+                    <div class="skeleton" style="height:14px;width:140px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:100px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:50px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:60px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:70px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:90px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td></td>
+                </tr>
+                <tr class="sk-row">
+                  <td>
+                    <div class="skeleton" style="height:14px;width:120px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:90px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:50px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:60px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:70px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:90px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td></td>
+                </tr>
+                <tr class="sk-row">
+                  <td>
+                    <div class="skeleton" style="height:14px;width:160px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:110px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:50px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:60px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:70px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:90px;"></div>
+                  </td>
+                  <td>
+                    <div class="skeleton" style="height:14px;width:80px;"></div>
+                  </td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footer" id="history-footer" style="display:none;">
+            <span class="table-info" id="history-info"></span>
+            <div class="pagination" id="history-pagination"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ══ RECEIVE DRAWER ══ -->
+  <div class="drawer-backdrop" id="receive-drawer-backdrop" onclick="closeReceiveDrawer()"></div>
+  <div class="drawer" id="receive-drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title" id="drawer-title">Receive Stock</div>
+        <div class="drawer-sub" id="drawer-sub">Record an incoming delivery</div>
+      </div>
+      <button class="drawer-close" onclick="closeReceiveDrawer()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="drawer-body">
+
+      <input type="hidden" id="edit-movement-id">
+
+      <!-- Signature strip -->
+      <div class="signature-strip">
+        <i class="fa-solid fa-signature"></i>
+        <span>Signed as: <strong id="sig-name">...</strong></span>
+      </div>
+
+      <!-- Product -->
+      <div class="form-group">
+        <label class="form-label">Product <span>*</span></label>
+        <select class="form-control" id="product-select" onchange="onProductSelect()">
+          <option value="">— Select product —</option>
+        </select>
+      </div>
+
+      <!-- Product preview -->
+      <div class="product-preview" id="product-preview">
+        <div class="preview-avatar" id="preview-avatar">—</div>
+        <div class="preview-info">
+          <div class="preview-name" id="preview-name">—</div>
+          <div class="preview-meta" id="preview-meta">—</div>
+        </div>
+        <div class="preview-stock">
+          <div class="preview-stock-num" id="preview-qty">—</div>
+          <div class="preview-stock-label">current stock</div>
+        </div>
+      </div>
+
+      <div class="form-divider"></div>
+      <div class="form-section-label">Delivery Details</div>
+
+      <!-- Supplier -->
+      <div class="form-group">
+        <label class="form-label">Supplier <span>*</span></label>
+        <select class="form-control" id="supplier-select">
+          <option value="">— Select supplier —</option>
+        </select>
+        <div class="form-hint">Suppliers are managed on the Suppliers page</div>
+      </div>
+
+      <!-- Qty + Unit Cost -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quantity Received <span>*</span></label>
+          <input type="number" class="form-control" id="qty-input" placeholder="0" min="1" oninput="updateTotal()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit Cost ($) <span>*</span></label>
+          <input type="number" class="form-control" id="cost-input" placeholder="0.00" min="0" step="0.01"
+            oninput="updateTotal()">
+        </div>
+      </div>
+
+      <!-- Total value preview -->
+      <div class="form-group" id="total-preview-wrap" style="display:none;">
+        <div class="total-preview-row">
+          <span>Total Delivery Value</span>
+          <span id="total-value" style="font-size:15px;font-weight:800;color:var(--text-primary);">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Date + SKU -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Delivery Date <span>*</span></label>
+          <input type="date" class="form-control" id="date-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SKU / Code</label>
+          <input type="text" class="form-control" id="sku-input" placeholder="Auto-filled" disabled>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" id="notes-input"
+          placeholder="Optional — delivery reference, condition, batch number..."></textarea>
+      </div>
+
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-outline" onclick="closeReceiveDrawer()">Cancel</button>
+      <button class="btn btn-primary" id="submit-btn" onclick="submitReceive()">
+        <i class="fa-solid fa-truck-ramp-box"></i>
+        <span id="submit-label">Record Receive</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ DELETE CONFIRM MODAL ══ -->
+  <div class="modal-backdrop" id="delete-modal-backdrop">
+    <div class="modal">
+      <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3>Reverse this entry?</h3>
+      <p>This will remove the receive record and deduct the quantity from stock. Only do this if the entry was recorded
+        in error.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">
+          <i class="fa-solid fa-trash"></i>
+          <span>Reverse Entry</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../assets/js/toast.js"></script>
+  <script src="../../assets/js/supabase.js"></script>
+  <script src="../../assets/js/auth-guard.js"></script>
+  <script src="../../assets/js/sidebar.js"></script>
+  <script src="../../assets/js/receive.js"></script>
+</body>
+
+</html>
