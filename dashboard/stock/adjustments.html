@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inno — Stock Adjustments</title>
+
+    <!-- External Styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Theme -->
+    <script>
+        (function () {
+            const theme = localStorage.getItem('inno-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <!-- Internal Styling -->
+    <link rel="stylesheet" href="../../assets/css/global.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+        <div class="main-wrap">
+
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i
+                        class="fa-solid fa-bars-staggered"></i></button>
+                <div class="topbar-title">
+                    <p id="topbar-date"></p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
+                            id="theme-icon"></i></button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-body">
+
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Stock Adjustments</h2>
+                        <p>Every correction is signed, reasoned, and permanently recorded</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-outline btn-sm" onclick="exportAdjustments()">
+                            <i class="fa-solid fa-file-csv"></i> Export
+                        </button>
+                        <button class="btn btn-primary" onclick="openDrawer()">
+                            <i class="fa-solid fa-plus"></i> New Adjustment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon blue"><i class="fa-solid fa-sliders"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-total">—</div>
+                            <div class="stat-mini-label">Total Adjustments</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon green"><i class="fa-solid fa-arrow-up"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-added">—</div>
+                            <div class="stat-mini-label">Units Added</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon red"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-removed">—</div>
+                            <div class="stat-mini-label">Units Removed</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon orange"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-month">—</div>
+                            <div class="stat-mini-label">This Month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" id="adj-search" placeholder="Search product, reason..."
+                            oninput="filterAdjustments()">
+                    </div>
+                    <select class="filter-select" id="filter-type" onchange="filterAdjustments()">
+                        <option value="">All Types</option>
+                        <option value="add">Add</option>
+                        <option value="remove">Remove</option>
+                    </select>
+                    <select class="filter-select" id="filter-reason" onchange="filterAdjustments()">
+                        <option value="">All Reasons</option>
+                        <option value="Physical Count">Physical Count</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Lost/Stolen">Lost/Stolen</option>
+                        <option value="Found">Found</option>
+                        <option value="Data Entry Error">Data Entry Error</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select class="filter-select" id="filter-date" onchange="filterAdjustments()">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Reason</th>
+                                    <th>Date</th>
+                                    <th>Notes</th>
+                                    <th>Signed By</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="adj-tbody">
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:130px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:60px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:100px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:120px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:150px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:65px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:130px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer" id="adj-footer" style="display:none;">
+                        <span class="table-info" id="adj-info"></span>
+                        <div class="pagination" id="adj-pagination"></div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ══ ADJUSTMENT DRAWER ══ -->
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+    <div class="drawer" id="adj-drawer">
+        <div class="drawer-header">
+            <div>
+                <div class="drawer-title" id="drawer-title">New Adjustment</div>
+                <div class="drawer-sub">All fields marked * are required</div>
+            </div>
+            <button class="drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-body">
+            <input type="hidden" id="edit-id">
+
+            <!-- Signature strip -->
+            <div class="sig-strip">
+                <i class="fa-solid fa-signature"></i>
+                <span>Signing as: <strong id="sig-display">...</strong></span>
+            </div>
+
+            <!-- Adjustment type -->
+            <div class="form-group">
+                <label class="form-label">Adjustment Type <span>*</span></label>
+                <div class="type-toggle">
+                    <div class="type-option" id="type-add" onclick="selectType('add')">
+                        <i class="fa-solid fa-plus"></i> Add Stock
+                    </div>
+                    <div class="type-option" id="type-remove" onclick="selectType('remove')">
+                        <i class="fa-solid fa-minus"></i> Remove Stock
+                    </div>
+                </div>
+                <input type="hidden" id="f-type" value="">
+            </div>
+
+            <!-- Product -->
+            <div class="form-group">
+                <label class="form-label">Product <span>*</span></label>
+                <select class="form-control" id="f-product" onchange="onProductChange()">
+                    <option value="">— Select product —</option>
+                </select>
+            </div>
+
+            <!-- Product preview -->
+            <div class="product-preview" id="product-preview">
+                <div class="preview-avatar" id="preview-avatar">—</div>
+                <div>
+                    <div class="preview-name" id="preview-name">—</div>
+                    <div class="preview-meta" id="preview-meta">—</div>
+                </div>
+                <div class="preview-stock">
+                    <div class="preview-qty" id="preview-qty">—</div>
+                    <div class="preview-qty-label">current stock</div>
+                </div>
+            </div>
+
+            <div class="form-divider"></div>
+            <div class="form-section">Adjustment Details</div>
+
+            <!-- Quantity -->
+            <div class="form-group">
+                <label class="form-label">Quantity <span>*</span></label>
+                <input type="number" class="form-control" id="f-qty" placeholder="Enter number of units" min="1"
+                    oninput="updateNewStock()">
+                <div class="form-hint" id="qty-hint">Enter the number of units to add or remove</div>
+            </div>
+
+            <!-- New stock preview -->
+            <div class="new-stock-preview" id="new-stock-preview">
+                <span class="nsp-label" id="nsp-label">New stock will be</span>
+                <span class="nsp-val" id="nsp-val">—</span>
+            </div>
+
+            <!-- Reason -->
+            <div class="form-group">
+                <label class="form-label">Reason <span>*</span></label>
+                <select class="form-control" id="f-reason">
+                    <option value="">— Select reason —</option>
+                    <option value="Physical Count">Physical Count</option>
+                    <option value="Damaged">Damaged</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Lost/Stolen">Lost/Stolen</option>
+                    <option value="Found">Found</option>
+                    <option value="Data Entry Error">Data Entry Error</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group">
+                <label class="form-label">Date <span>*</span></label>
+                <input type="date" class="form-control" id="f-date">
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="f-notes"
+                    placeholder="Additional details about this adjustment..."></textarea>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn btn-outline" onclick="closeDrawer()">Cancel</button>
+            <button class="btn btn-primary" id="save-btn" onclick="saveAdjustment()">
+                <i class="fa-solid fa-check"></i>
+                <span id="save-label">Save Adjustment</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ══ CONFIRM DELETE MODAL ══ -->
+    <div class="modal-backdrop" id="delete-modal">
+        <div class="modal">
+            <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3>Undo this adjustment?</h3>
+            <p id="delete-modal-body">This will reverse the quantity change and permanently remove the adjustment
+                record.</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">
+                    <i class="fa-solid fa-rotate-left"></i> Undo Adjustment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../assets/js/toast.js"></script>
+    <script src="../../assets/js/supabase.js"></script>
+    <script src="../../assets/js/auth-guard.js"></script>
+    <script src="../../assets/js/sidebar.js"></script>
+    <script src="../../assets/js/adjustments.js"></script>
+</body>
+
+</html>
