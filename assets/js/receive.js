@@ -1,9 +1,4 @@
-/* ============================================================
-   assets/js/receive.js
-   Receive Stock page logic
-   Roles: root_admin, manager, accountant, staff — can create
-          staff — sees only their own entries
-   ============================================================ */
+/* ==== RECEIVE.JS ===== */
 
 /* ── State ── */
 let allProducts     = [];
@@ -233,7 +228,7 @@ function renderHistoryTable() {
                 <td>
                     <div class="sig-cell">
                         <div class="sig-avatar">${initials}</div>
-                        <span class="sig-name">@${m.created_by_username || '—'}</span>
+                        <span class="sig-name">${m.created_by_username || '—'}</span>
                     </div>
                 </td>
                 <td style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${m.notes || ''}">${m.notes || '—'}</td>
@@ -579,11 +574,11 @@ document.addEventListener('keydown', function (e) {
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
     document.getElementById('topbar-avatar').textContent   = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Signature strip */
     document.getElementById('sig-name').textContent =
-        `${window.currentUser.full_name || window.currentUser.username} (@${window.currentUser.username})`;
+        `${window.currentUser.full_name || window.currentUser.username} (${window.currentUser.username})`;
 
     /* Theme */
     applyTheme(localStorage.getItem('inno-theme') || 'light');
