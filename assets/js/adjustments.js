@@ -575,7 +575,7 @@ document.addEventListener('keydown', function (e) {
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
     document.getElementById('topbar-avatar').textContent   = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Signature */
     document.getElementById('sig-display').textContent =

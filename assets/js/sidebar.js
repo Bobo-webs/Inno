@@ -400,7 +400,7 @@ window.renderSidebar = function (activePage, userRole) {
 
             <!-- Brand -->
             <div class="sidebar-brand">
-                <div class="sidebar-brand-logo">In</div>
+                <div class="sidebar-brand-logo">I</div>
                 <div>
                     <div class="sidebar-brand-name">Inno</div>
                     <div class="sidebar-brand-sub">Inventory</div>

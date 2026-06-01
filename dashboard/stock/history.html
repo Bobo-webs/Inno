@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock History</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../../assets/css/global.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+
+    <style>
+        /* ── Stats row ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.neutral {
+            background: var(--bg);
+            color: var(--text-muted);
+        }
+
+        .stat-icon.blue {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .stat-icon.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .stat-icon.warning {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .stat-body {
+            min-width: 0;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-value.positive {
+            color: var(--success);
+        }
+
+        .stat-value.negative {
+            color: var(--danger);
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        /* ── Skeleton stat card ── */
+        .stat-card .skeleton-val {
+            height: 22px;
+            width: 80px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .skeleton-lbl {
+            height: 12px;
+            width: 110px;
+            border-radius: 4px;
+        }
+
+        /* ── Custom date range ── */
+        .custom-date-row {
+            display: none;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .custom-date-row.show {
+            display: flex;
+        }
+
+        .custom-date-row input[type="date"] {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 12.5px;
+            font-family: var(--font);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .custom-date-row input[type="date"]:focus {
+            border-color: var(--primary);
+        }
+
+        .custom-date-sep {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* ── Movement type badges ── */
+        .badge-receive {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .badge-adj-add {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .badge-adj-remove {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .badge-po {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .badge-adjustment {
+            background: var(--bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Quantity cell ── */
+        .qty-signed {
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .qty-signed.in {
+            color: var(--success);
+        }
+
+        .qty-signed.out {
+            color: var(--danger);
+        }
+
+        /* ── Reference cell ── */
+        .ref-cell {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── Sig cell ── */
+        .sig-cell {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .sig-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sig-name {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* ── Toolbar extra row for custom dates ── */
+        .toolbar-extra {
+            margin-top: -10px;
+            margin-bottom: 16px;
+            padding-left: 2px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script>
+        (function () {
+            const theme = localStorage.getItem('inno-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById && document.getElementById('sidebar-container') &&
+                (document.getElementById('sidebar-container').innerHTML = `
+          <aside class="sidebar">
+            <div class="sidebar-logo">
+              <div class="sidebar-logo-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <div class="sidebar-logo-text">Inno</div>
+            </div>
+            <nav class="sidebar-nav" style="opacity:0;"></nav>
+          </aside>`);
+        })();
+    </script>
+
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="main-wrap">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+                <div class="topbar-title">
+                    <p id="topbar-date"></p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i class="fa-solid fa-sun" id="theme-icon"></i>
+                    </button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page body -->
+            <main class="page-body">
+
+                <!-- Page header -->
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Stock History</h2>
+                        <p>Complete audit trail of every stock movement — receives, adjustments, and purchase orders</p>
+                    </div>
+                    <div class="page-header-actions" id="page-header-actions" style="visibility:hidden;">
+                        <button class="btn btn-outline btn-sm" onclick="exportHistory()">
+                            <i class="fa-solid fa-file-excel"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="stats-row" id="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon neutral"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div class="stat-body">
+                            <div class="skeleton skeleton-val"></div>
+                            <div class="skeleton skeleton-lbl"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="stat-body">
+                            <div class="skeleton skeleton-val"></div>
+                            <div class="skeleton skeleton-lbl"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger"><i class="fa-solid fa-arrow-up"></i></div>
+                        <div class="stat-body">
+                            <div class="skeleton skeleton-val"></div>
+                            <div class="skeleton skeleton-lbl"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <div class="stat-body">
+                            <div class="skeleton skeleton-val"></div>
+                            <div class="skeleton skeleton-lbl"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" id="history-search"
+                            placeholder="Search product or SKU..." oninput="filterHistory()">
+                    </div>
+                    <select class="filter-select" id="type-filter" onchange="filterHistory()">
+                        <option value="">All Types</option>
+                        <option value="receive">Receive</option>
+                        <option value="adjustment_add">Adjustment (Add)</option>
+                        <option value="adjustment_remove">Adjustment (Remove)</option>
+                        <option value="purchase_order">Purchase Order</option>
+                    </select>
+                    <select class="filter-select" id="product-filter" onchange="filterHistory()">
+                        <option value="">All Products</option>
+                    </select>
+                    <select class="filter-select" id="date-filter" onchange="onDateFilterChange()">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <!-- Custom date range row -->
+                <div class="toolbar-extra">
+                    <div class="custom-date-row" id="custom-date-row">
+                        <input type="date" id="date-from" onchange="filterHistory()">
+                        <span class="custom-date-sep">to</span>
+                        <input type="date" id="date-to" onchange="filterHistory()">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                    <th>Signed By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <tr class="sk-row">
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:140px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:90px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:50px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:120px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:90px;"></div>
+                                    </td>
+                                </tr>
+                                <tr class="sk-row">
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:120px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:80px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:50px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:100px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:90px;"></div>
+                                    </td>
+                                </tr>
+                                <tr class="sk-row">
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:160px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:100px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:50px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:130px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:90px;"></div>
+                                    </td>
+                                </tr>
+                                <tr class="sk-row">
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:85px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:50px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:14px;width:90px;"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer" id="history-footer" style="display:none;">
+                        <span class="table-info" id="history-info"></span>
+                        <div class="pagination" id="history-pagination"></div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../assets/js/toast.js"></script>
+    <script src="../../assets/js/supabase.js"></script>
+    <script src="../../assets/js/auth-guard.js"></script>
+    <script src="../../assets/js/sidebar.js"></script>
+    <script src="../../assets/js/history.js"></script>
+</body>
+
+</html>
