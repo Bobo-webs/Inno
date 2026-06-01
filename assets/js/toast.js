@@ -1,4 +1,4 @@
-/* ── Global toast notification ── */
+/* ==== TOAST.JS ==== */
 window.showToast = function (message, type = 'error') {
     let color, icon, hasSpinner = false;
     if (type === 'success') {
