@@ -1,9 +1,4 @@
-/* ============================================================
-   assets/js/history.js
-   Stock History page — read-only audit trail
-   Roles: root_admin, manager, accountant — see all
-          staff — sees only their own entries
-   ============================================================ */
+/* ==== HISTORY.JS ==== */
 
 /* ── State ── */
 let allMovements = [];
@@ -370,9 +365,7 @@ window.exportHistory = function () {
     showToast('History exported.', 'success');
 };
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ══════ INIT ══════ */
 (async function init() {
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
