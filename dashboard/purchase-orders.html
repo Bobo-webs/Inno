@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inno — Purchase Orders</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+        <div class="main-wrap">
+
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-title">
+                    <h1>Purchase Orders</h1>
+                    <p>Manage outgoing stock sales to clients</p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
+                            id="theme-icon"></i></button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-body">
+
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Purchase Orders</h2>
+                        <p>Stock leaves the warehouse only through an approved purchase order</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-outline btn-sm" onclick="exportPOs()">
+                            <i class="fa-solid fa-file-csv"></i> Export
+                        </button>
+                        <button class="btn btn-primary" onclick="openDrawer()">
+                            <i class="fa-solid fa-plus"></i> Create PO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon blue"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-total">—</div>
+                            <div class="stat-mini-label">Total POs</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon orange"><i class="fa-solid fa-clock"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-pending">—</div>
+                            <div class="stat-mini-label">Pending Approval</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-approved">—</div>
+                            <div class="stat-mini-label">Approved This Month</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini" id="stat-value-card">
+                        <div class="stat-mini-icon purple"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-value">—</div>
+                            <div class="stat-mini-label">Approved Value</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" id="po-search" placeholder="Search PO number, client..."
+                            oninput="filterPOs()">
+                    </div>
+                    <select class="filter-select" id="filter-status" onchange="filterPOs()">
+                        <option value="">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select class="filter-select" id="filter-date" onchange="filterPOs()">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PO Number</th>
+                                    <th>Client</th>
+                                    <th>Items</th>
+                                    <th id="th-value">Total Value</th>
+                                    <th>Status</th>
+                                    <th>Created By</th>
+                                    <th>Approved By</th>
+                                    <th>Date</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="po-tbody">
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:100px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:70px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:80px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:120px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:70px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:75px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:105px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:100px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:40px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:70px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:85px;border-radius:20px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer" id="po-footer" style="display:none;">
+                        <span class="table-info" id="po-info"></span>
+                        <div class="pagination" id="po-pagination"></div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ══ CREATE / EDIT DRAWER ══ -->
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+    <div class="drawer" id="po-drawer">
+        <div class="drawer-header">
+            <div>
+                <div class="drawer-title" id="drawer-title">Create Purchase Order</div>
+                <div class="drawer-sub">All fields marked * are required</div>
+            </div>
+            <button class="drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-body">
+            <input type="hidden" id="edit-po-id">
+
+            <div class="sig-strip">
+                <i class="fa-solid fa-signature"></i>
+                <span>Creating as: <strong id="sig-display">...</strong></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">PO Number <span>*</span></label>
+                    <input type="text" class="form-control" id="f-po-number" placeholder="e.g. PO-2024-001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expected Date</label>
+                    <input type="date" class="form-control" id="f-expected-date">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Client Name <span>*</span></label>
+                    <input type="text" class="form-control" id="f-client-name" placeholder="Company or person name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Client Contact</label>
+                    <input type="text" class="form-control" id="f-client-contact" placeholder="Phone or email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes / Terms</label>
+                <textarea class="form-control" id="f-notes"
+                    placeholder="Payment terms, delivery instructions..."></textarea>
+            </div>
+
+            <div class="form-divider"></div>
+            <div class="form-section">Line Items <span style="color:var(--danger);font-size:10px;">*</span></div>
+
+            <!-- Line items container -->
+            <div class="line-item-header">
+                <div>Product</div>
+                <div>SKU</div>
+                <div>Qty</div>
+                <div>Unit Price ($)</div>
+                <div></div>
+            </div>
+            <div id="line-items-container"></div>
+
+            <button class="add-line-btn" onclick="addLineItem()">
+                <i class="fa-solid fa-plus"></i> Add Line Item
+            </button>
+
+            <!-- Total -->
+            <div class="po-total-wrap">
+                <span class="po-total-label">Total Order Value</span>
+                <span class="po-total-val" id="po-total">$0.00</span>
+            </div>
+
+        </div>
+        <div class="drawer-footer">
+            <button class="btn btn-outline" onclick="closeDrawer()">Cancel</button>
+            <button class="btn btn-outline" id="save-draft-btn" onclick="savePO('draft')">
+                <i class="fa-solid fa-floppy-disk"></i> Save Draft
+            </button>
+            <button class="btn btn-primary" id="submit-btn" onclick="savePO('submitted')">
+                <i class="fa-solid fa-paper-plane"></i> Submit for Approval
+            </button>
+        </div>
+    </div>
+
+    <!-- ══ VIEW PO MODAL ══ -->
+    <div class="modal-backdrop" id="view-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="view-po-number">PO Details</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;" id="view-po-date"></div>
+                </div>
+                <button class="modal-close" onclick="closeViewModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="view-modal-body">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CONFIRM MODAL (approve/reject/cancel/delete) ══ -->
+    <div class="modal-backdrop" id="confirm-modal">
+        <div class="confirm-modal">
+            <div class="confirm-icon" id="confirm-icon"><i class="fa-solid fa-question" id="confirm-icon-i"></i></div>
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-body">Are you sure?</p>
+            <textarea class="reject-reason" id="reject-reason" placeholder="Enter rejection reason..."
+                style="display:none;"></textarea>
+            <div class="confirm-actions">
+                <button class="btn btn-outline" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn" id="confirm-action-btn" onclick="executeConfirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script src="../assets/js/supabase.js"></script>
+    <script src="../assets/js/auth-guard.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/purchase-orders.js"></script>
+</body>
+
+</html>
