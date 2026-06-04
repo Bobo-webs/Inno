@@ -27,19 +27,257 @@
 </head>
 
 <body>
+    <style>
+        /* ── Stats row ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.neutral {
+            background: var(--bg);
+            color: var(--text-muted);
+        }
+
+        .stat-icon.blue {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .stat-icon.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .stat-icon.warning {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .stat-body {
+            min-width: 0;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-value.positive {
+            color: var(--success);
+        }
+
+        .stat-value.negative {
+            color: var(--danger);
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        /* ── Skeleton stat card ── */
+        .stat-card .skeleton-val {
+            height: 22px;
+            width: 80px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .skeleton-lbl {
+            height: 12px;
+            width: 110px;
+            border-radius: 4px;
+        }
+
+        .skeleton-lbl {
+            color: transparent;
+        }
+
+        /* ── Custom date range ── */
+        .custom-date-row {
+            display: none;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .custom-date-row.show {
+            display: flex;
+        }
+
+        .custom-date-row input[type="date"] {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 12.5px;
+            font-family: var(--font);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .custom-date-row input[type="date"]:focus {
+            border-color: var(--primary);
+        }
+
+        .custom-date-sep {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* ── Movement type badges ── */
+        .badge-receive {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .badge-adj-add {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .badge-adj-remove {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .badge-po {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .badge-adjustment {
+            background: var(--bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Quantity cell ── */
+        .qty-signed {
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .qty-signed.in {
+            color: var(--success);
+        }
+
+        .qty-signed.out {
+            color: var(--danger);
+        }
+
+        /* ── Reference cell ── */
+        .ref-cell {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── Sig cell ── */
+        .sig-cell {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .sig-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sig-name {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* ── Toolbar extra row for custom dates ── */
+        .toolbar-extra {
+            margin-top: -10px;
+            margin-bottom: 16px;
+            padding-left: 2px;
+        }
+    </style>
+
+
+
     <div class="app-layout">
         <div id="sidebar-container"></div>
         <div class="main-wrap">
 
             <header class="topbar">
-                <button class="topbar-hamburger" onclick="toggleSidebar()"><i
-                        class="fa-solid fa-bars-staggered"></i></button>
+                <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
                 <div class="topbar-title">
                     <p id="topbar-date"></p>
                 </div>
                 <div class="topbar-right">
-                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
-                            id="theme-icon"></i></button>
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i class="fa-solid fa-sun" id="theme-icon"></i>
+                    </button>
                     <div class="topbar-user">
                         <div class="topbar-avatar" id="topbar-avatar">--</div>
                         <span class="topbar-username" id="topbar-username">...</span>
@@ -65,33 +303,33 @@
                 </div>
 
                 <!-- Stats -->
-                <div class="stats-row">
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon blue"><i class="fa-solid fa-sliders"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-total">—</div>
-                            <div class="stat-mini-label">Total Adjustments</div>
+                <div class="stats-row" id="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-sliders"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-total"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Total Adjustments</div>
                         </div>
                     </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon green"><i class="fa-solid fa-arrow-up"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-added">—</div>
-                            <div class="stat-mini-label">Units Added</div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fa-solid fa-arrow-up"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-added"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Units Added</div>
                         </div>
                     </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon red"><i class="fa-solid fa-arrow-down"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-removed">—</div>
-                            <div class="stat-mini-label">Units Removed</div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-removed"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Units Removed</div>
                         </div>
                     </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon orange"><i class="fa-solid fa-calendar-day"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-month">—</div>
-                            <div class="stat-mini-label">This Month</div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-month"></div>
+                            <div class="stat-label skeleton skeleton-lbl">This Month</div>
                         </div>
                     </div>
                 </div>
@@ -143,7 +381,7 @@
                                 </tr>
                             </thead>
                             <tbody id="adj-tbody">
-                                <tr>
+                                <tr class="sk-row">
                                     <td>
                                         <div class="skeleton" style="height:13px;width:130px;"></div>
                                     </td>
@@ -167,7 +405,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr>
+                                <tr class="sk-row">
                                     <td>
                                         <div class="skeleton" style="height:13px;width:110px;"></div>
                                     </td>
@@ -191,7 +429,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr>
+                                <tr class="sk-row">
                                     <td>
                                         <div class="skeleton" style="height:13px;width:150px;"></div>
                                     </td>
@@ -228,7 +466,7 @@
         </div>
     </div>
 
-    <!-- ══ ADJUSTMENT DRAWER ══ -->
+    <!-- ADJUSTMENT DRAWER -->
     <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
     <div class="drawer" id="adj-drawer">
         <div class="drawer-header">
@@ -241,13 +479,11 @@
         <div class="drawer-body">
             <input type="hidden" id="edit-id">
 
-            <!-- Signature strip -->
             <div class="sig-strip">
                 <i class="fa-solid fa-signature"></i>
                 <span>Signing as: <strong id="sig-display">...</strong></span>
             </div>
 
-            <!-- Adjustment type -->
             <div class="form-group">
                 <label class="form-label">Adjustment Type <span>*</span></label>
                 <div class="type-toggle">
@@ -261,7 +497,6 @@
                 <input type="hidden" id="f-type" value="">
             </div>
 
-            <!-- Product -->
             <div class="form-group">
                 <label class="form-label">Product <span>*</span></label>
                 <select class="form-control" id="f-product" onchange="onProductChange()">
@@ -269,7 +504,6 @@
                 </select>
             </div>
 
-            <!-- Product preview -->
             <div class="product-preview" id="product-preview">
                 <div class="preview-avatar" id="preview-avatar">—</div>
                 <div>
@@ -285,7 +519,6 @@
             <div class="form-divider"></div>
             <div class="form-section">Adjustment Details</div>
 
-            <!-- Quantity -->
             <div class="form-group">
                 <label class="form-label">Quantity <span>*</span></label>
                 <input type="number" class="form-control" id="f-qty" placeholder="Enter number of units" min="1"
@@ -293,13 +526,11 @@
                 <div class="form-hint" id="qty-hint">Enter the number of units to add or remove</div>
             </div>
 
-            <!-- New stock preview -->
             <div class="new-stock-preview" id="new-stock-preview">
                 <span class="nsp-label" id="nsp-label">New stock will be</span>
                 <span class="nsp-val" id="nsp-val">—</span>
             </div>
 
-            <!-- Reason -->
             <div class="form-group">
                 <label class="form-label">Reason <span>*</span></label>
                 <select class="form-control" id="f-reason">
@@ -314,13 +545,11 @@
                 </select>
             </div>
 
-            <!-- Date -->
             <div class="form-group">
                 <label class="form-label">Date <span>*</span></label>
                 <input type="date" class="form-control" id="f-date">
             </div>
 
-            <!-- Notes -->
             <div class="form-group">
                 <label class="form-label">Notes</label>
                 <textarea class="form-control" id="f-notes"
@@ -336,7 +565,7 @@
         </div>
     </div>
 
-    <!-- ══ CONFIRM DELETE MODAL ══ -->
+    <!-- CONFIRM DELETE MODAL -->
     <div class="modal-backdrop" id="delete-modal">
         <div class="modal">
             <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>

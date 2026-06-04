@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inno — Suppliers</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+    <style>
+        /* ── Page-specific only ── */
+        .supplier-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .contact-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .contact-cell span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .contact-cell span i {
+            width: 14px;
+            text-align: center;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+        <div class="main-wrap">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-title">
+                    <h1>Suppliers</h1>
+                    <p>Manage your stock suppliers and vendor information</p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
+                            id="theme-icon"></i></button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-body">
+
+                <!-- Page header -->
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Suppliers</h2>
+                        <p>Suppliers feed the dropdown on the Receive Stock page</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-outline btn-sm" onclick="exportSuppliers()">
+                            <i class="fa-solid fa-file-csv"></i> Export
+                        </button>
+                        <button class="btn btn-primary" id="add-supplier-btn" onclick="openDrawer()">
+                            <i class="fa-solid fa-plus"></i> Add Supplier
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon blue"><i class="fa-solid fa-handshake"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-total">—</div>
+                            <div class="stat-mini-label">Total Suppliers</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-active">—</div>
+                            <div class="stat-mini-label">Active Suppliers</div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-icon purple"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div>
+                            <div class="stat-mini-val" id="stat-value">—</div>
+                            <div class="stat-mini-label">Total Purchases</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" id="sup-search" placeholder="Search name, contact..."
+                            oninput="filterSuppliers()">
+                    </div>
+                    <select class="filter-select" id="filter-status" onchange="filterSuppliers()">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Contact</th>
+                                    <th>Payment Terms</th>
+                                    <th>Total Receives</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="sup-tbody">
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:130px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:90px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:60px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:110px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:120px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:80px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:60px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:150px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:100px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:85px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:13px;width:60px;"></div>
+                                    </td>
+                                    <td>
+                                        <div class="skeleton" style="height:20px;width:70px;border-radius:20px;"></div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer" id="sup-footer" style="display:none;">
+                        <span class="table-info" id="sup-info"></span>
+                        <div class="pagination" id="sup-pagination"></div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ══ SUPPLIER DRAWER ══ -->
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+    <div class="drawer" id="sup-drawer">
+        <div class="drawer-header">
+            <div>
+                <div class="drawer-title" id="drawer-title">Add Supplier</div>
+                <div class="drawer-sub">Fields marked * are required</div>
+            </div>
+            <button class="drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-body">
+            <input type="hidden" id="edit-id">
+
+            <div class="form-group">
+                <label class="form-label">Company Name <span>*</span></label>
+                <input type="text" class="form-control" id="f-name" placeholder="e.g. Acme Industrial Ltd">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" class="form-control" id="f-contact" placeholder="Full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="f-phone" placeholder="+234 000 0000">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="f-email" placeholder="supplier@company.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Terms</label>
+                    <input type="text" class="form-control" id="f-terms" placeholder="e.g. Net 30, COD">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea class="form-control" id="f-address" placeholder="Supplier address..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="f-notes" placeholder="Any additional notes..."></textarea>
+            </div>
+
+            <!-- Active toggle — only shown on edit -->
+            <div class="form-group" id="active-toggle-wrap" style="display:none;">
+                <label class="form-label">Status</label>
+                <select class="form-control" id="f-active">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+                <div class="form-hint">Inactive suppliers won't appear on the Receive Stock page</div>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn btn-outline" onclick="closeDrawer()">Cancel</button>
+            <button class="btn btn-primary" id="save-btn" onclick="saveSupplier()">
+                <i class="fa-solid fa-check"></i>
+                <span id="save-label">Save Supplier</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ══ DELETE CONFIRM MODAL ══ -->
+    <div class="modal-backdrop" id="delete-modal">
+        <div class="modal">
+            <div class="modal-icon"><i class="fa-solid fa-trash"></i></div>
+            <h3 id="delete-title">Delete Supplier?</h3>
+            <p id="delete-body">This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script src="../assets/js/supabase.js"></script>
+    <script src="../assets/js/auth-guard.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/suppliers.js"></script>
+</body>
+
+</html>

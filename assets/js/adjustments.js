@@ -1,14 +1,14 @@
 /* ===== ADJUSTMENTS.JS ===== */
 
 /* ── State ── */
-let allProducts        = [];
-let allAdjustments     = [];
+let allProducts = [];
+let allAdjustments = [];
 let filteredAdjustments = [];
-let currentPage        = 1;
-const PAGE_SIZE        = 15;
-let deleteTargetId     = null;
-let selectedType       = '';
-let userRole           = null;
+let currentPage = 1;
+const PAGE_SIZE = 15;
+let deleteTargetId = null;
+let selectedType = '';
+let userRole = null;
 
 /* ── Helpers ── */
 function getInitials(name) {
@@ -50,10 +50,10 @@ window.selectType = function (type) {
     selectedType = type;
     document.getElementById('f-type').value = type;
 
-    const addEl    = document.getElementById('type-add');
+    const addEl = document.getElementById('type-add');
     const removeEl = document.getElementById('type-remove');
 
-    addEl.className    = 'type-option' + (type === 'add'    ? ' selected-add'    : '');
+    addEl.className = 'type-option' + (type === 'add' ? ' selected-add' : '');
     removeEl.className = 'type-option' + (type === 'remove' ? ' selected-remove' : '');
 
     updateNewStock();
@@ -99,30 +99,31 @@ async function loadAdjustments() {
 
 /* ── Update stats ── */
 function updateStats() {
-    const total   = allAdjustments.length;
-    const added   = allAdjustments.filter(a => a.quantity > 0).reduce((s, a) => s + a.quantity, 0);
+    document.querySelectorAll('#stats-row .skeleton').forEach(el => el.classList.remove('skeleton', 'skeleton-val', 'skeleton-lbl'));
+    const total = allAdjustments.length;
+    const added = allAdjustments.filter(a => a.quantity > 0).reduce((s, a) => s + a.quantity, 0);
     const removed = allAdjustments.filter(a => a.quantity < 0).reduce((s, a) => s + Math.abs(a.quantity), 0);
 
-    const now       = new Date();
+    const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const thisMonth  = allAdjustments.filter(a => a.created_at >= monthStart).length;
+    const thisMonth = allAdjustments.filter(a => a.created_at >= monthStart).length;
 
-    document.getElementById('stat-total').textContent   = formatNum(total);
-    document.getElementById('stat-added').textContent   = formatNum(added);
+    document.getElementById('stat-total').textContent = formatNum(total);
+    document.getElementById('stat-added').textContent = formatNum(added);
     document.getElementById('stat-removed').textContent = formatNum(removed);
-    document.getElementById('stat-month').textContent   = formatNum(thisMonth);
+    document.getElementById('stat-month').textContent = formatNum(thisMonth);
 }
 
 /* ── Filter ── */
 window.filterAdjustments = function () {
     const search = document.getElementById('adj-search').value.toLowerCase();
-    const type   = document.getElementById('filter-type').value;
+    const type = document.getElementById('filter-type').value;
     const reason = document.getElementById('filter-reason').value;
-    const date   = document.getElementById('filter-date').value;
+    const date = document.getElementById('filter-date').value;
 
-    const now   = new Date();
+    const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const week  = new Date(today); week.setDate(today.getDate() - today.getDay());
+    const week = new Date(today); week.setDate(today.getDate() - today.getDay());
     const month = new Date(now.getFullYear(), now.getMonth(), 1);
 
     filteredAdjustments = allAdjustments.filter(a => {
@@ -132,7 +133,7 @@ window.filterAdjustments = function () {
             (a.created_by_username || '').toLowerCase().includes(search);
 
         const matchType = !type ||
-            (type === 'add'    && a.quantity > 0) ||
+            (type === 'add' && a.quantity > 0) ||
             (type === 'remove' && a.quantity < 0);
 
         const matchReason = !reason || a.reason === reason;
@@ -140,7 +141,7 @@ window.filterAdjustments = function () {
         const entryDate = new Date(a.created_at);
         const matchDate = !date ||
             (date === 'today' && entryDate >= today) ||
-            (date === 'week'  && entryDate >= week)  ||
+            (date === 'week' && entryDate >= week) ||
             (date === 'month' && entryDate >= month);
 
         return matchSearch && matchType && matchReason && matchDate;
@@ -152,7 +153,7 @@ window.filterAdjustments = function () {
 
 /* ── Render table ── */
 function renderTable() {
-    const tbody  = document.getElementById('adj-tbody');
+    const tbody = document.getElementById('adj-tbody');
     const footer = document.getElementById('adj-footer');
 
     if (!filteredAdjustments.length) {
@@ -174,10 +175,10 @@ function renderTable() {
     const paged = filteredAdjustments.slice(start, start + PAGE_SIZE);
 
     tbody.innerHTML = paged.map((a, i) => {
-        const isAdd      = a.quantity > 0;
-        const absQty     = Math.abs(a.quantity);
-        const initials   = getInitials(a.created_by_username || '');
-        const typeBadge  = isAdd
+        const isAdd = a.quantity > 0;
+        const absQty = Math.abs(a.quantity);
+        const initials = getInitials(a.created_by_username || '');
+        const typeBadge = isAdd
             ? `<span class="badge badge-add">Added</span>`
             : `<span class="badge badge-remove">Removed</span>`;
         const qtyDisplay = isAdd
@@ -215,7 +216,7 @@ function renderTable() {
     document.getElementById('adj-info').textContent =
         `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total} adjustments`;
 
-    const pag   = document.getElementById('adj-pagination');
+    const pag = document.getElementById('adj-pagination');
     if (pages <= 1) { pag.innerHTML = ''; return; }
 
     let pagHTML = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
@@ -242,7 +243,7 @@ window.goPage = function (page) {
 /* ── Product change handler ── */
 window.onProductChange = function () {
     const productId = document.getElementById('f-product').value;
-    const preview   = document.getElementById('product-preview');
+    const preview = document.getElementById('product-preview');
 
     if (!productId) {
         preview.classList.remove('show');
@@ -255,13 +256,13 @@ window.onProductChange = function () {
 
     const initials = (product.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     document.getElementById('preview-avatar').textContent = initials;
-    document.getElementById('preview-name').textContent   = product.name;
-    document.getElementById('preview-meta').textContent   =
+    document.getElementById('preview-name').textContent = product.name;
+    document.getElementById('preview-meta').textContent =
         `${product.categories?.name || 'Uncategorised'} · ${product.unit || '—'}`;
 
     const qtyEl = document.getElementById('preview-qty');
     qtyEl.textContent = formatNum(product.quantity);
-    qtyEl.className   = 'preview-qty';
+    qtyEl.className = 'preview-qty';
     if (product.quantity <= 0) qtyEl.classList.add('danger');
     else if (product.quantity <= product.reorder_level) qtyEl.classList.add('low');
 
@@ -272,11 +273,11 @@ window.onProductChange = function () {
 /* ── New stock preview ── */
 window.updateNewStock = function () {
     const productId = document.getElementById('f-product').value;
-    const qty       = parseInt(document.getElementById('f-qty').value) || 0;
-    const type      = document.getElementById('f-type').value;
-    const preview   = document.getElementById('new-stock-preview');
-    const label     = document.getElementById('nsp-label');
-    const val       = document.getElementById('nsp-val');
+    const qty = parseInt(document.getElementById('f-qty').value) || 0;
+    const type = document.getElementById('f-type').value;
+    const preview = document.getElementById('new-stock-preview');
+    const label = document.getElementById('nsp-label');
+    const val = document.getElementById('nsp-val');
 
     if (!productId || !qty || !type) { preview.classList.remove('show', 'add', 'remove'); return; }
 
@@ -285,10 +286,10 @@ window.updateNewStock = function () {
 
     const newQty = type === 'add' ? product.quantity + qty : product.quantity - qty;
     preview.className = `new-stock-preview show ${type}`;
-    label.className   = `nsp-label ${type}`;
-    val.className     = `nsp-val ${type}`;
+    label.className = `nsp-label ${type}`;
+    val.className = `nsp-val ${type}`;
     label.textContent = type === 'add' ? 'New stock will be' : 'Stock will become';
-    val.textContent   = newQty < 0 ? 'Would go negative!' : formatNum(newQty) + ' units';
+    val.textContent = newQty < 0 ? 'Would go negative!' : formatNum(newQty) + ' units';
 
     if (newQty < 0) {
         val.style.color = 'var(--danger)';
@@ -299,22 +300,22 @@ window.updateNewStock = function () {
 
 /* ── Drawer ── */
 window.openDrawer = function (editId = null) {
-    document.getElementById('edit-id').value            = editId || '';
+    document.getElementById('edit-id').value = editId || '';
     document.getElementById('drawer-title').textContent = editId ? 'Edit Adjustment' : 'New Adjustment';
-    document.getElementById('save-label').textContent   = editId ? 'Update Adjustment' : 'Save Adjustment';
+    document.getElementById('save-label').textContent = editId ? 'Update Adjustment' : 'Save Adjustment';
 
     if (!editId) {
         /* Reset form */
         selectedType = '';
-        document.getElementById('f-type').value    = '';
+        document.getElementById('f-type').value = '';
         document.getElementById('f-product').value = '';
-        document.getElementById('f-qty').value     = '';
-        document.getElementById('f-reason').value  = '';
-        document.getElementById('f-date').value    = todayISO();
-        document.getElementById('f-notes').value   = '';
+        document.getElementById('f-qty').value = '';
+        document.getElementById('f-reason').value = '';
+        document.getElementById('f-date').value = todayISO();
+        document.getElementById('f-notes').value = '';
         document.getElementById('product-preview').classList.remove('show');
         document.getElementById('new-stock-preview').classList.remove('show', 'add', 'remove');
-        document.getElementById('type-add').className    = 'type-option';
+        document.getElementById('type-add').className = 'type-option';
         document.getElementById('type-remove').className = 'type-option';
     }
 
@@ -340,10 +341,10 @@ window.editAdjustment = function (id) {
     selectType(type);
 
     document.getElementById('f-product').value = entry.products?.id || '';
-    document.getElementById('f-qty').value     = Math.abs(entry.quantity);
-    document.getElementById('f-reason').value  = entry.reason || '';
-    document.getElementById('f-date').value    = entry.created_at?.split('T')[0] || todayISO();
-    document.getElementById('f-notes').value   = entry.notes || '';
+    document.getElementById('f-qty').value = Math.abs(entry.quantity);
+    document.getElementById('f-reason').value = entry.reason || '';
+    document.getElementById('f-date').value = entry.created_at?.split('T')[0] || todayISO();
+    document.getElementById('f-notes').value = entry.notes || '';
 
     onProductChange();
     updateNewStock();
@@ -351,21 +352,21 @@ window.editAdjustment = function (id) {
 
 /* ── Save adjustment ── */
 window.saveAdjustment = async function () {
-    const editId    = document.getElementById('edit-id').value;
-    const type      = document.getElementById('f-type').value;
+    const editId = document.getElementById('edit-id').value;
+    const type = document.getElementById('f-type').value;
     const productId = document.getElementById('f-product').value;
-    const qty       = parseInt(document.getElementById('f-qty').value) || 0;
-    const reason    = document.getElementById('f-reason').value;
-    const dateVal   = document.getElementById('f-date').value;
-    const notes     = document.getElementById('f-notes').value.trim();
-    const btn       = document.getElementById('save-btn');
+    const qty = parseInt(document.getElementById('f-qty').value) || 0;
+    const reason = document.getElementById('f-reason').value;
+    const dateVal = document.getElementById('f-date').value;
+    const notes = document.getElementById('f-notes').value.trim();
+    const btn = document.getElementById('save-btn');
 
     /* Validate */
-    if (!type)      { showToast('Please select an adjustment type.', 'error'); return; }
+    if (!type) { showToast('Please select an adjustment type.', 'error'); return; }
     if (!productId) { showToast('Please select a product.', 'error'); return; }
-    if (qty <= 0)   { showToast('Quantity must be greater than zero.', 'error'); return; }
-    if (!reason)    { showToast('Please select a reason.', 'error'); return; }
-    if (!dateVal)   { showToast('Please enter a date.', 'error'); return; }
+    if (qty <= 0) { showToast('Quantity must be greater than zero.', 'error'); return; }
+    if (!reason) { showToast('Please select a reason.', 'error'); return; }
+    if (!dateVal) { showToast('Please enter a date.', 'error'); return; }
 
     /* Check stock won't go negative for remove */
     if (type === 'remove') {
@@ -376,13 +377,13 @@ window.saveAdjustment = async function () {
         }
     }
 
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
 
     /* Signed quantity — negative for remove */
     const signedQty = type === 'add' ? qty : -qty;
-    const user      = window.currentUser;
-    const dateISO   = new Date(dateVal).toISOString();
+    const user = window.currentUser;
+    const dateISO = new Date(dateVal).toISOString();
 
     let error;
 
@@ -390,17 +391,17 @@ window.saveAdjustment = async function () {
         /* ── Edit: reverse old, apply new atomically ── */
         const old = allAdjustments.find(a => a.id === editId);
         const oldQty = old?.quantity || 0;
-        const diff   = signedQty - oldQty;
+        const diff = signedQty - oldQty;
 
         /* Update movement record */
         const { error: moveErr } = await db
             .from('stock_movements')
             .update({
-                quantity:             signedQty,
+                quantity: signedQty,
                 reason,
-                notes:                notes || null,
-                created_at:           dateISO,
-                created_by_username:  user.username
+                notes: notes || null,
+                created_at: dateISO,
+                created_by_username: user.username
             })
             .eq('id', editId);
 
@@ -410,7 +411,7 @@ window.saveAdjustment = async function () {
             const { error: prodErr } = await db
                 .from('products')
                 .update({
-                    quantity:   db.rpc ? undefined : undefined,
+                    quantity: db.rpc ? undefined : undefined,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', productId);
@@ -418,7 +419,7 @@ window.saveAdjustment = async function () {
             /* Use raw SQL increment via rpc */
             const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
                 p_product_id: productId,
-                p_diff:       diff
+                p_diff: diff
             });
 
             error = rpcErr;
@@ -429,14 +430,14 @@ window.saveAdjustment = async function () {
         const { error: moveErr } = await db
             .from('stock_movements')
             .insert({
-                product_id:           productId,
-                type:                 'adjustment',
-                quantity:             signedQty,
+                product_id: productId,
+                type: 'adjustment',
+                quantity: signedQty,
                 reason,
-                notes:                notes || null,
-                created_by:           user.id,
-                created_by_username:  user.username,
-                created_at:           dateISO
+                notes: notes || null,
+                created_by: user.id,
+                created_by_username: user.username,
+                created_at: dateISO
             });
 
         if (moveErr) { error = moveErr; }
@@ -444,7 +445,7 @@ window.saveAdjustment = async function () {
             /* Atomically update product quantity */
             const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
                 p_product_id: productId,
-                p_diff:       signedQty
+                p_diff: signedQty
             });
             error = rpcErr;
         }
@@ -452,7 +453,7 @@ window.saveAdjustment = async function () {
 
     if (error) {
         showToast(error.message || 'Failed to save adjustment. Try again.', 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i><span id="save-label">Save Adjustment</span>';
         return;
     }
@@ -460,7 +461,7 @@ window.saveAdjustment = async function () {
     showToast(editId ? 'Adjustment updated.' : 'Adjustment recorded successfully.', 'success');
     closeDrawer();
     await Promise.all([loadProducts(), loadAdjustments()]);
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span id="save-label">Save Adjustment</span>';
 };
 
@@ -470,7 +471,7 @@ window.openDeleteModal = function (id) {
     if (!entry) return;
     deleteTargetId = id;
     const absQty = Math.abs(entry.quantity);
-    const type   = entry.quantity > 0 ? 'add' : 'remove';
+    const type = entry.quantity > 0 ? 'add' : 'remove';
     document.getElementById('delete-modal-body').textContent =
         `This will ${type === 'add' ? 'deduct' : 'restore'} ${absQty} units of "${entry.products?.name}" and permanently remove this record.`;
     document.getElementById('delete-modal').classList.add('show');
@@ -484,7 +485,7 @@ window.closeDeleteModal = function () {
 window.confirmDelete = async function () {
     if (!deleteTargetId) return;
     const btn = document.getElementById('delete-confirm-btn');
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Undoing...</span>';
 
     const entry = allAdjustments.find(a => a.id === deleteTargetId);
@@ -493,12 +494,12 @@ window.confirmDelete = async function () {
     /* Reverse the quantity change */
     const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
         p_product_id: entry.products?.id,
-        p_diff:       -entry.quantity
+        p_diff: -entry.quantity
     });
 
     if (rpcErr) {
         showToast(rpcErr.message || 'Failed to reverse adjustment.', 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Undo Adjustment';
         return;
     }
@@ -511,7 +512,7 @@ window.confirmDelete = async function () {
 
     if (delErr) {
         showToast('Reversed quantity but failed to remove record. Contact admin.', 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Undo Adjustment';
         return;
     }
@@ -519,7 +520,7 @@ window.confirmDelete = async function () {
     showToast('Adjustment undone successfully.', 'success');
     closeDeleteModal();
     await Promise.all([loadProducts(), loadAdjustments()]);
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Undo Adjustment';
 };
 
@@ -528,9 +529,9 @@ window.exportAdjustments = function () {
     if (!filteredAdjustments.length) { showToast('No adjustments to export.', 'error'); return; }
 
     const headers = ['Product', 'SKU', 'Type', 'Quantity', 'Reason', 'Date', 'Notes', 'Signed By'];
-    const rows    = filteredAdjustments.map(a => [
+    const rows = filteredAdjustments.map(a => [
         a.products?.name || '',
-        a.products?.sku  || '',
+        a.products?.sku || '',
         a.quantity > 0 ? 'Add' : 'Remove',
         Math.abs(a.quantity),
         a.reason || '',
@@ -539,11 +540,11 @@ window.exportAdjustments = function () {
         a.created_by_username || ''
     ]);
 
-    const csv  = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = `adjustments-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
@@ -574,7 +575,7 @@ document.addEventListener('keydown', function (e) {
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
-    document.getElementById('topbar-avatar').textContent   = initials;
+    document.getElementById('topbar-avatar').textContent = initials;
     document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Signature */
