@@ -1,15 +1,15 @@
 /* ==== RECEIVE.JS ===== */
 
 /* ── State ── */
-let allProducts     = [];
-let allSuppliers    = [];
-let allHistory      = [];
+let allProducts = [];
+let allSuppliers = [];
+let allHistory = [];
 let filteredHistory = [];
-let currentPage     = 1;
-const PAGE_SIZE     = 15;
-let deleteTargetId  = null;
-let isEditMode      = false;
-let userRole        = null;
+let currentPage = 1;
+const PAGE_SIZE = 15;
+let deleteTargetId = null;
+let isEditMode = false;
+let userRole = null;
 
 /* ── Helpers ── */
 function getInitials(name) {
@@ -126,21 +126,21 @@ function updateSummaryChips() {
     }
     document.getElementById('summary-chips').style.display = 'flex';
 
-    const totalQty   = allHistory.reduce((s, m) => s + (m.quantity || 0), 0);
+    const totalQty = allHistory.reduce((s, m) => s + (m.quantity || 0), 0);
     const totalValue = allHistory.reduce((s, m) => s + ((m.quantity || 0) * (m.unit_cost || 0)), 0);
 
     document.getElementById('chip-total').textContent = `${allHistory.length} entr${allHistory.length !== 1 ? 'ies' : 'y'}`;
-    document.getElementById('chip-qty').textContent   = `${totalQty.toLocaleString()} units received`;
+    document.getElementById('chip-qty').textContent = `${totalQty.toLocaleString()} units received`;
     document.getElementById('chip-value').textContent = `${formatCurrency(totalValue)} total value`;
 }
 
 /* ── Filter history ── */
 window.filterHistory = function () {
-    const search     = document.getElementById('history-search').value.toLowerCase();
+    const search = document.getElementById('history-search').value.toLowerCase();
     const supplierId = document.getElementById('supplier-filter').value;
-    const dateRange  = document.getElementById('date-filter').value;
+    const dateRange = document.getElementById('date-filter').value;
 
-    const now   = new Date();
+    const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -156,9 +156,9 @@ window.filterHistory = function () {
         let matchDate = true;
         if (dateRange) {
             const entryDate = new Date(m.created_at);
-            if (dateRange === 'today')  matchDate = entryDate >= today;
-            if (dateRange === 'week')   matchDate = entryDate >= weekStart;
-            if (dateRange === 'month')  matchDate = entryDate >= monthStart;
+            if (dateRange === 'today') matchDate = entryDate >= today;
+            if (dateRange === 'week') matchDate = entryDate >= weekStart;
+            if (dateRange === 'month') matchDate = entryDate >= monthStart;
         }
 
         return matchSearch && matchSupplier && matchDate;
@@ -170,7 +170,7 @@ window.filterHistory = function () {
 
 /* ── Render history table ── */
 function renderHistoryTable() {
-    const tbody  = document.getElementById('history-tbody');
+    const tbody = document.getElementById('history-tbody');
     const footer = document.getElementById('history-footer');
 
     if (!filteredHistory.length) {
@@ -195,8 +195,8 @@ function renderHistoryTable() {
     const paged = filteredHistory.slice(start, start + PAGE_SIZE);
 
     tbody.innerHTML = paged.map((m, i) => {
-        const totalVal  = (m.quantity || 0) * (m.unit_cost || 0);
-        const initials  = getInitials(m.created_by_username || '');
+        const totalVal = (m.quantity || 0) * (m.unit_cost || 0);
+        const initials = getInitials(m.created_by_username || '');
         const canAction = userRole !== 'staff' || m.created_by === window.currentUser?.id;
 
         const actions = canAction ? `
@@ -268,7 +268,7 @@ window.goPage = function (page) {
 /* ── Product select handler ── */
 window.onProductSelect = function () {
     const productId = document.getElementById('product-select').value;
-    const preview   = document.getElementById('product-preview');
+    const preview = document.getElementById('product-preview');
 
     if (!productId) {
         preview.classList.remove('show');
@@ -283,13 +283,13 @@ window.onProductSelect = function () {
 
     const initials = (product.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     document.getElementById('preview-avatar').textContent = initials;
-    document.getElementById('preview-name').textContent   = product.name;
-    document.getElementById('preview-meta').textContent   =
+    document.getElementById('preview-name').textContent = product.name;
+    document.getElementById('preview-meta').textContent =
         `${product.categories?.name || 'Uncategorised'} · ${product.unit || '—'}`;
 
     const qtyEl = document.getElementById('preview-qty');
     qtyEl.textContent = product.quantity.toLocaleString();
-    qtyEl.className   = 'preview-stock-num';
+    qtyEl.className = 'preview-stock-num';
     if (product.quantity <= 0) qtyEl.classList.add('danger');
     else if (product.quantity <= product.reorder_level) qtyEl.classList.add('low');
 
@@ -299,7 +299,7 @@ window.onProductSelect = function () {
 
 /* ── Total value preview ── */
 window.updateTotal = function () {
-    const qty  = parseFloat(document.getElementById('qty-input').value)  || 0;
+    const qty = parseFloat(document.getElementById('qty-input').value) || 0;
     const cost = parseFloat(document.getElementById('cost-input').value) || 0;
     const wrap = document.getElementById('total-preview-wrap');
 
@@ -315,7 +315,7 @@ window.updateTotal = function () {
 window.openReceiveDrawer = function () {
     resetForm();
     document.getElementById('drawer-title').textContent = 'Receive Stock';
-    document.getElementById('drawer-sub').textContent   = 'Record an incoming delivery';
+    document.getElementById('drawer-sub').textContent = 'Record an incoming delivery';
     document.getElementById('receive-drawer-backdrop').classList.add('show');
     document.getElementById('receive-drawer').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -331,57 +331,57 @@ window.closeReceiveDrawer = function () {
 
 /* ── Submit receive ── */
 window.submitReceive = async function () {
-    const productId  = document.getElementById('product-select').value;
+    const productId = document.getElementById('product-select').value;
     const supplierId = document.getElementById('supplier-select').value;
-    const qty        = parseInt(document.getElementById('qty-input').value)    || 0;
-    const cost       = parseFloat(document.getElementById('cost-input').value) || 0;
-    const dateVal    = document.getElementById('date-input').value;
-    const notes      = document.getElementById('notes-input').value.trim();
-    const btn        = document.getElementById('submit-btn');
+    const qty = parseInt(document.getElementById('qty-input').value) || 0;
+    const cost = parseFloat(document.getElementById('cost-input').value) || 0;
+    const dateVal = document.getElementById('date-input').value;
+    const notes = document.getElementById('notes-input').value.trim();
+    const btn = document.getElementById('submit-btn');
     const movementId = document.getElementById('edit-movement-id').value;
 
-    if (!productId)  { showToast('Please select a product.', 'error');  return; }
+    if (!productId) { showToast('Please select a product.', 'error'); return; }
     if (!supplierId) { showToast('Please select a supplier.', 'error'); return; }
-    if (qty <= 0)    { showToast('Quantity must be greater than zero.', 'error'); return; }
-    if (cost < 0)    { showToast('Unit cost cannot be negative.', 'error'); return; }
-    if (!dateVal)    { showToast('Please enter the delivery date.', 'error'); return; }
+    if (qty <= 0) { showToast('Quantity must be greater than zero.', 'error'); return; }
+    if (cost < 0) { showToast('Unit cost cannot be negative.', 'error'); return; }
+    if (!dateVal) { showToast('Please enter the delivery date.', 'error'); return; }
 
     const enteredDate = new Date(dateVal);
-    const maxDate     = new Date();
+    const maxDate = new Date();
     maxDate.setFullYear(maxDate.getFullYear() + 1);
     if (enteredDate > maxDate) {
         showToast('Delivery date seems too far in the future.', 'error'); return;
     }
 
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
 
-    const user    = window.currentUser;
+    const user = window.currentUser;
     const dateISO = new Date(dateVal).toISOString();
     let result;
 
     if (isEditMode && movementId) {
         const { data, error } = await db.rpc('update_receive_stock', {
-            p_movement_id:         movementId,
-            p_product_id:          productId,
-            p_supplier_id:         supplierId,
-            p_quantity:            qty,
-            p_unit_cost:           cost,
-            p_notes:               notes || null,
-            p_date:                dateISO,
-            p_updated_by:          user.id,
+            p_movement_id: movementId,
+            p_product_id: productId,
+            p_supplier_id: supplierId,
+            p_quantity: qty,
+            p_unit_cost: cost,
+            p_notes: notes || null,
+            p_date: dateISO,
+            p_updated_by: user.id,
             p_updated_by_username: user.username
         });
         result = error ? { error: error.message } : data;
     } else {
         const { data, error } = await db.rpc('receive_stock', {
-            p_product_id:          productId,
-            p_supplier_id:         supplierId,
-            p_quantity:            qty,
-            p_unit_cost:           cost,
-            p_notes:               notes || null,
-            p_date:                dateISO,
-            p_created_by:          user.id,
+            p_product_id: productId,
+            p_supplier_id: supplierId,
+            p_quantity: qty,
+            p_unit_cost: cost,
+            p_notes: notes || null,
+            p_date: dateISO,
+            p_created_by: user.id,
             p_created_by_username: user.username
         });
         result = error ? { error: error.message } : data;
@@ -389,7 +389,7 @@ window.submitReceive = async function () {
 
     if (result?.error) {
         showToast(result.error, 'error');
-        btn.disabled  = false;
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i><span id="submit-label">Record Receive</span>';
         return;
     }
@@ -404,7 +404,7 @@ window.submitReceive = async function () {
     closeReceiveDrawer();
     await Promise.all([loadProducts(), loadHistory()]);
 
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i><span id="submit-label">Record Receive</span>';
 };
 
@@ -416,16 +416,16 @@ window.editEntry = function (movementId) {
     isEditMode = true;
     document.getElementById('edit-movement-id').value = movementId;
     document.getElementById('drawer-title').textContent = 'Edit Receive Entry';
-    document.getElementById('drawer-sub').textContent   =
+    document.getElementById('drawer-sub').textContent =
         `Editing: ${entry.products?.name} · ${formatDate(entry.created_at)}`;
     document.getElementById('submit-label').textContent = 'Update Entry';
 
-    document.getElementById('product-select').value  = entry.products?.id || '';
+    document.getElementById('product-select').value = entry.products?.id || '';
     document.getElementById('supplier-select').value =
         allSuppliers.find(s => s.name === entry.suppliers?.name)?.id || '';
-    document.getElementById('qty-input').value   = entry.quantity;
-    document.getElementById('cost-input').value  = entry.unit_cost;
-    document.getElementById('date-input').value  = entry.created_at?.split('T')[0] || '';
+    document.getElementById('qty-input').value = entry.quantity;
+    document.getElementById('cost-input').value = entry.unit_cost;
+    document.getElementById('date-input').value = entry.created_at?.split('T')[0] || '';
     document.getElementById('notes-input').value = entry.notes || '';
 
     onProductSelect();
@@ -439,19 +439,21 @@ window.editEntry = function (movementId) {
 /* ── Reset form ── */
 function resetForm() {
     isEditMode = false;
-    document.getElementById('edit-movement-id').value  = '';
-    document.getElementById('product-select').value    = '';
-    document.getElementById('supplier-select').value   = '';
-    document.getElementById('qty-input').value         = '';
-    document.getElementById('cost-input').value        = '';
-    document.getElementById('date-input').value        = todayISO();
-    document.getElementById('sku-input').value         = '';
-    document.getElementById('notes-input').value       = '';
+    document.getElementById('edit-movement-id').value = '';
+    document.getElementById('product-select').value = '';
+    document.getElementById('supplier-select').value = '';
+    document.getElementById('qty-input').value = '';
+    document.getElementById('cost-input').value = '';
+    document.getElementById('date-input').value = todayISO();
+    document.getElementById('sku-input').value = '';
+    document.getElementById('notes-input').value = '';
     document.getElementById('product-preview').classList.remove('show');
     document.getElementById('total-preview-wrap').style.display = 'none';
     document.getElementById('drawer-title').textContent = 'Receive Stock';
-    document.getElementById('drawer-sub').textContent   = 'Record an incoming delivery';
-    document.getElementById('submit-label').textContent = 'Record Receive';
+    document.getElementById('drawer-sub').textContent = 'Record an incoming delivery';
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i><span id="submit-label">Record Receive</span>';
 }
 
 /* ── Delete modal ── */
@@ -467,8 +469,8 @@ window.closeDeleteModal = function () {
 
 window.confirmDelete = async function () {
     if (!deleteTargetId) return;
-    const btn   = document.getElementById('delete-confirm-btn');
-    btn.disabled  = true;
+    const btn = document.getElementById('delete-confirm-btn');
+    btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Reversing...</span>';
 
     const entry = allHistory.find(m => m.id === deleteTargetId);
@@ -476,33 +478,15 @@ window.confirmDelete = async function () {
 
     const supplierId = allSuppliers.find(s => s.name === entry.suppliers?.name)?.id || null;
 
-    const { data: deductResult } = await db.rpc('update_receive_stock', {
-        p_movement_id:         deleteTargetId,
-        p_product_id:          entry.products?.id,
-        p_supplier_id:         supplierId,
-        p_quantity:            0,
-        p_unit_cost:           entry.unit_cost,
-        p_notes:               entry.notes,
-        p_date:                entry.created_at,
-        p_updated_by:          window.currentUser.id,
-        p_updated_by_username: window.currentUser.username
+    const { error: reverseError } = await db.rpc('reverse_receive_stock', {
+        p_movement_id: deleteTargetId,
+        p_product_id: entry.products?.id,
+        p_quantity: entry.quantity || 0
     });
 
-    if (deductResult?.error) {
-        showToast(deductResult.error, 'error');
-        btn.disabled  = false;
-        btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
-        return;
-    }
-
-    const { error: deleteError } = await db
-        .from('stock_movements')
-        .delete()
-        .eq('id', deleteTargetId);
-
-    if (deleteError) {
-        showToast('Failed to remove entry. Try again.', 'error');
-        btn.disabled  = false;
+    if (reverseError) {
+        showToast('Failed to reverse entry. Try again.', 'error');
+        btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
         return;
     }
@@ -510,7 +494,7 @@ window.confirmDelete = async function () {
     showToast('Entry reversed and removed.', 'success');
     closeDeleteModal();
     await Promise.all([loadProducts(), loadHistory()]);
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
 };
 
@@ -519,9 +503,9 @@ window.exportReceives = function () {
     if (!filteredHistory.length) { showToast('No entries to export.', 'error'); return; }
 
     const headers = ['Product', 'SKU', 'Supplier', 'Quantity', 'Unit Cost', 'Total Value', 'Delivery Date', 'Received By', 'Notes'];
-    const rows    = filteredHistory.map(m => [
-        m.products?.name  || '',
-        m.products?.sku   || '',
+    const rows = filteredHistory.map(m => [
+        m.products?.name || '',
+        m.products?.sku || '',
         m.suppliers?.name || '',
         m.quantity,
         m.unit_cost || 0,
@@ -531,11 +515,11 @@ window.exportReceives = function () {
         m.notes || ''
     ]);
 
-    const csv  = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = `receive-history-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
@@ -573,7 +557,7 @@ document.addEventListener('keydown', function (e) {
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
-    document.getElementById('topbar-avatar').textContent   = initials;
+    document.getElementById('topbar-avatar').textContent = initials;
     document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Signature strip */

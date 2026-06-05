@@ -1589,7 +1589,21 @@ textarea.form-control {
     flex-shrink: 0;
 }
 
-/* ── Qty cell ── */
+/* ── Quantity cell ── */
+.qty-signed {
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.qty-signed.in {
+    color: var(--success);
+}
+
+.qty-signed.out {
+    color: var(--danger);
+}
+
 .qty-cell {
     font-weight: 700;
     font-size: 14px;
@@ -2450,6 +2464,12 @@ textarea.form-control {
     font-size: 10px;
     color: var(--text-muted);
     margin-top: 2px;
+}
+
+#chip-qty {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 /* ── New stock preview ── */

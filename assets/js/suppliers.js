@@ -72,6 +72,7 @@ async function loadSuppliers() {
 
 /* ── Stats ── */
 function updateStats() {
+    document.querySelectorAll('#stats-row .skeleton').forEach(el => el.classList.remove('skeleton', 'skeleton-val', 'skeleton-lbl'));
     const total = allSuppliers.length;
     const active = allSuppliers.filter(s => s.is_active).length;
     const totalValue = Object.values(receiveTotalMap).reduce((s, v) => s + v, 0);
