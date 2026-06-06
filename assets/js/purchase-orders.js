@@ -1,9 +1,4 @@
-/* ============================================================
-   assets/js/purchase-orders.js
-   Purchase Orders page — outgoing stock sales to clients
-   Roles: all can create, admin/manager/accountant can approve
-          staff see only their own POs
-   ============================================================ */
+/* ==== PURCHASE ORDERS.JS ==== */
 
 /* ── State ── */
 let allPOs = [];
@@ -102,6 +97,7 @@ async function loadPOs() {
 
 /* ── Update stats ── */
 function updateStats() {
+    document.querySelectorAll('#stats-row .skeleton').forEach(el => el.classList.remove('skeleton', 'skeleton-val', 'skeleton-lbl'));
     const total = allPOs.length;
     const pending = allPOs.filter(p => p.status === 'submitted').length;
 

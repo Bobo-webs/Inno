@@ -1,4 +1,5 @@
-/* ==== HOME DASHBOARD ==== */
+/* ==== DASHBOARD STYLING ==== */
+
 .app-layout {
     display: flex;
     min-height: 100vh;
@@ -286,6 +287,26 @@
     }
 }
 
+/* ── Stats row ── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+@media(max-width:900px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:480px) {
+    .stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 .stat-card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -455,6 +476,88 @@
     color: rgba(255, 255, 255, 0.7);
     z-index: 2;
     pointer-events: none;
+}
+
+.stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.stat-icon.neutral {
+    background: var(--bg);
+    color: var(--text-muted);
+}
+
+.stat-icon.blue {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.stat-icon.success {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.stat-icon.danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.stat-icon.warning {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.stat-icon.purple {
+    background: #f3e8ff;
+    color: var(--purple);
+}
+
+.stat-body {
+    min-width: 0;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.stat-value.positive {
+    color: var(--success);
+}
+
+.stat-value.negative {
+    color: var(--danger);
+}
+
+.stat-label {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.stat-card .skeleton-val {
+    height: 22px;
+    width: 80px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.stat-card .skeleton-lbl {
+    height: 12px;
+    width: 110px;
+    border-radius: 4px;
+    color: transparent;
 }
 
 /* ── Middle row ── */
@@ -1850,29 +1953,6 @@ textarea.form-control {
     background: var(--danger-soft);
 }
 
-
-
-/* ==== ADJUSTMENT PAGE ==== */
-/* ── Stats ── */
-.stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 24px;
-}
-
-@media(max-width:900px) {
-    .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media(max-width:480px) {
-    .stats-row {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
 .stat-mini {
     background: var(--card);
     border: 1px solid var(--border);
@@ -1990,6 +2070,56 @@ textarea.form-control {
 
 .filter-select:focus {
     border-color: var(--primary);
+}
+
+/* ── Custom date range ── */
+.custom-date-row {
+    display: none;
+    gap: 8px;
+    align-items: center;
+}
+
+.custom-date-row.show {
+    display: flex;
+}
+
+.custom-date-row input[type="date"] {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 12.5px;
+    font-family: var(--font);
+    outline: none;
+    transition: var(--transition);
+}
+
+.custom-date-row input[type="date"]:focus {
+    border-color: var(--primary);
+}
+
+.custom-date-sep {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* ── Reference cell ── */
+.ref-cell {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Toolbar extra row for custom dates ── */
+.toolbar-extra {
+    margin-top: -10px;
+    margin-bottom: 16px;
+    padding-left: 2px;
 }
 
 /* ── Buttons ── */
@@ -2993,6 +3123,35 @@ tbody td {
     color: var(--danger);
 }
 
+
+/* ── Movement type badges ── */
+.badge-receive {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.badge-adj-add {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge-adj-remove {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.badge-po {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.badge-adjustment {
+    background: var(--bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+
 /* ── Signature cell ── */
 .sig-cell {
     display: flex;
@@ -3700,4 +3859,38 @@ textarea.form-control {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+
+
+/* ── SUPPLIERS PAGE ── */
+.supplier-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-cell span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.contact-cell span i {
+    width: 14px;
+    text-align: center;
+    margin-right: 4px;
 }

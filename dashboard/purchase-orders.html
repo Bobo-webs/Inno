@@ -28,12 +28,25 @@
 </head>
 
 <body>
+    <style>
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+    </style>
+
     <div class="app-layout">
         <div id="sidebar-container"></div>
         <div class="main-wrap">
 
             <header class="topbar">
-                <button class="topbar-hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i
+                        class="fa-solid fa-bars-staggered"></i></button>
                 <div class="topbar-title">
                     <p id="topbar-date"></p>
                 </div>
@@ -65,33 +78,33 @@
                 </div>
 
                 <!-- Stats -->
-                <div class="stats-row">
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon blue"><i class="fa-solid fa-file-invoice"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-total">—</div>
-                            <div class="stat-mini-label">Total POs</div>
+                <div class="stats-row" id="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-total"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Total POs</div>
                         </div>
                     </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon orange"><i class="fa-solid fa-clock"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-pending">—</div>
-                            <div class="stat-mini-label">Pending Approval</div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-pending"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Pending Approval</div>
                         </div>
                     </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-icon green"><i class="fa-solid fa-circle-check"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-approved">—</div>
-                            <div class="stat-mini-label">Approved This Month</div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-approved"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Approved This Month</div>
                         </div>
                     </div>
-                    <div class="stat-mini" id="stat-value-card">
-                        <div class="stat-mini-icon purple"><i class="fa-solid fa-dollar-sign"></i></div>
-                        <div>
-                            <div class="stat-mini-val" id="stat-value">—</div>
-                            <div class="stat-mini-label">Approved Value</div>
+                    <div class="stat-card" id="stat-value-card">
+                        <div class="stat-icon purple"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div class="stat-body">
+                            <div class="stat-value skeleton skeleton-val" id="stat-value"></div>
+                            <div class="stat-label skeleton skeleton-lbl">Approved Value</div>
                         </div>
                     </div>
                 </div>
