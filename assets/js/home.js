@@ -1,4 +1,5 @@
 /* ==== HOME.JS ==== */
+
 let movementChart = null;
 let currentPeriod = 7;
 let realtimeChannel = null;
@@ -249,74 +250,105 @@ function renderLowStockAlerts(items) {
 
 /* ── Load & render chart ── */
 async function loadChartData(days) {
-    const since = new Date(Date.now() - days * 86400000).toISOString();
+    const to = new Date();
+    const from = new Date(Date.now() - days * 86400000);
 
+    const label = days === 1 ? 'Today' : `Last ${days} days`;
+    document.getElementById('chart-period-label').textContent = label;
+
+    await loadChartDataByRange(from.toISOString(), to.toISOString(), days);
+}
+
+async function loadChartDataByRange(fromISO, toISO, days = null) {
     const { data: movements } = await db
         .from('stock_movements')
         .select('type, quantity, created_at')
-        .gte('created_at', since)
-        .in('type', ['receive', 'in', 'out']);
+        .gte('created_at', fromISO)
+        .lte('created_at', toISO)
+        .in('type', ['receive', 'in', 'out', 'purchase_order']);
 
-    /* Build day buckets */
+    /* Build day buckets between from and to */
+    const from = new Date(fromISO);
+    const to = new Date(toISO);
+    const msDay = 86400000;
+    const numDays = Math.max(1, Math.floor((to - from) / msDay) + 1);
+
     const labels = [];
     const inData = [];
     const outData = [];
 
-    for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(Date.now() - i * 86400000);
+    for (let i = 0; i < numDays; i++) {
+        const d = new Date(from.getTime() + i * msDay);
+        const dayStr = d.toISOString().split('T')[0];
+
         labels.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
 
-        const dayStr = d.toISOString().split('T')[0];
-        const dayMovements = (movements || []).filter(m => m.created_at.startsWith(dayStr));
-        inData.push(dayMovements.filter(m => m.type === 'receive' || m.type === 'in').reduce((s, m) => s + m.quantity, 0));
-        outData.push(dayMovements.filter(m => m.type === 'out').reduce((s, m) => s + m.quantity, 0));
+        const dayMoves = (movements || []).filter(m => m.created_at.startsWith(dayStr));
+        inData.push(dayMoves
+            .filter(m => m.type === 'receive' || m.type === 'in')
+            .reduce((s, m) => s + (m.quantity || 0), 0));
+        outData.push(dayMoves
+            .filter(m => m.type === 'out' || m.type === 'purchase_order')
+            .reduce((s, m) => s + (m.quantity || 0), 0));
     }
 
     renderChart(labels, inData, outData);
-    document.getElementById('chart-period-label').textContent = `Last ${days} days`;
 }
 
-/* ── Render Chart.js bar chart ── */
+/* ── Render Chart.js line chart ── */
 function renderChart(labels, inData, outData) {
     const ctx = document.getElementById('movement-chart').getContext('2d');
-
     if (movementChart) movementChart.destroy();
 
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
+    const tickColor = isDark ? '#64748b' : '#94a3b8';
+
     movementChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels,
             datasets: [
                 {
                     label: 'Stock In',
                     data: inData,
-                    backgroundColor: '#1d4ed8',
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    barPercentage: 0.55,
-                    categoryPercentage: 0.7
+                    borderColor: '#1d4ed8',
+                    backgroundColor: 'rgba(29,78,216,0.08)',
+                    pointBackgroundColor: '#1d4ed8',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    fill: true
                 },
                 {
                     label: 'Stock Out',
                     data: outData,
-                    backgroundColor: '#e2e8f0',
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    barPercentage: 0.55,
-                    categoryPercentage: 0.7
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249,115,22,0.07)',
+                    pointBackgroundColor: '#f97316',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    fill: true
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#0f172a',
                     titleColor: '#f1f5f9',
                     bodyColor: '#94a3b8',
-                    padding: 10,
+                    padding: 12,
                     cornerRadius: 8,
                     callbacks: {
                         label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} units`
@@ -328,39 +360,61 @@ function renderChart(labels, inData, outData) {
                     grid: { display: false },
                     border: { display: false },
                     ticks: {
-                        color: '#94a3b8',
+                        color: tickColor,
                         font: { family: 'Poppins', size: 11 },
                         maxRotation: 0,
-                        /* Show fewer labels for 30d */
-                        maxTicksLimit: currentPeriod === 7 ? 7 : 10
+                        maxTicksLimit: 10
                     }
                 },
                 y: {
-                    grid: { color: '#f1f5f9', drawBorder: false },
-                    border: { display: false, dash: [4, 4] },
+                    grid: { color: gridColor },
+                    border: { display: false },
                     ticks: {
-                        color: '#94a3b8',
+                        color: tickColor,
                         font: { family: 'Poppins', size: 11 },
                         precision: 0
-                    }
+                    },
+                    beginAtZero: true
                 }
             }
         }
     });
 }
 
-/* ── Period toggle ── */
-window.setPeriod = async function (days, btn) {
-    if (days === currentPeriod) return;
-    currentPeriod = days;
-    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    await loadChartData(days);
+/* ── Period Change ── */
+window.onPeriodChange = async function (select) {
+    const val = select.value;
+    const customRow = document.getElementById('chart-custom-range');
+
+    if (val === 'custom') {
+        customRow.classList.add('show');
+        return;
+    }
+
+    customRow.classList.remove('show');
+    currentPeriod = parseInt(val);
+    await loadChartData(currentPeriod);
+};
+
+window.applyCustomRange = async function () {
+    const from = document.getElementById('chart-date-from').value;
+    const to = document.getElementById('chart-date-to').value;
+    if (!from || !to) return;
+
+    const fromDate = new Date(from);
+    const toDate = new Date(to + 'T23:59:59');
+    if (fromDate > toDate) {
+        showToast('Start date must be before end date.', 'error');
+        return;
+    }
+
+    await loadChartDataByRange(fromDate.toISOString(), toDate.toISOString());
+    document.getElementById('chart-period-label').textContent =
+        `${fromDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} — ${toDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
 };
 
 /* ── Realtime subscriptions ── */
 function startRealtime() {
-    /* Unsubscribe any existing channel */
     if (realtimeChannel) db.removeChannel(realtimeChannel);
 
     realtimeChannel = db
@@ -370,7 +424,6 @@ function startRealtime() {
             schema: 'public',
             table: 'stock_movements'
         }, () => {
-            /* Reload dashboard silently on any stock movement change */
             loadDashboard();
         })
         .on('postgres_changes', {
@@ -385,7 +438,6 @@ function startRealtime() {
 
 /* ── Init ── */
 (async function init() {
-    /* Wait for auth-guard to set window.currentUser */
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
         await new Promise(r => setTimeout(r, 50));

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Inno</title>
+    <title>Home</title>
 
     <!-- External Styling -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -130,7 +130,6 @@
 
                 <div id="real-ui" style="display:none;">
 
-                    <!-- Row 1 — Summary cards -->
                     <div class="summary-grid">
 
                         <!-- Featured: Total Stock Value -->
@@ -200,34 +199,43 @@
 
                     </div>
 
-                    <!-- Row 2 — Chart + mini stats -->
                     <div class="mid-row">
 
-                        <!-- Bar chart -->
+                        <!-- Line chart -->
                         <div class="chart-card">
                             <div class="chart-card-header">
                                 <div>
                                     <div class="chart-card-title">Stock Movement</div>
                                     <div class="chart-card-sub" id="chart-period-label">Last 7 days</div>
                                 </div>
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div class="period-toggle" id="period-toggle">
-                                        <button class="period-btn active" data-period="7"
-                                            onclick="setPeriod(7,  this)">7d</button>
-                                        <button class="period-btn" data-period="30"
-                                            onclick="setPeriod(30, this)">30d</button>
-                                    </div>
+                                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                                     <div class="chart-legend">
                                         <div class="legend-item">
                                             <div class="legend-dot" style="background:#1d4ed8;"></div>
                                             Stock In
                                         </div>
                                         <div class="legend-item">
-                                            <div class="legend-dot" style="background:#e2e8f0;"></div>
+                                            <div class="legend-dot" style="background:#f97316;"></div>
                                             Stock Out
                                         </div>
                                     </div>
+                                    <select class="filter-select" id="period-select" onchange="onPeriodChange(this)">
+                                        <option value="1">Today</option>
+                                        <option value="7" selected>Last 7 days</option>
+                                        <option value="14">Last 14 days</option>
+                                        <option value="30">Last 30 days</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
                                 </div>
+                            </div>
+                            <!-- Custom date range row -->
+                            <div id="chart-custom-range"
+                                style="display:none;gap:8px;align-items:center;padding:0 0 16px 0;flex-wrap:wrap;">
+                                <input type="date" id="chart-date-from" class="chart-date-input"
+                                    onchange="applyCustomRange()">
+                                <span style="font-size:12px;color:var(--text-muted);">to</span>
+                                <input type="date" id="chart-date-to" class="chart-date-input"
+                                    onchange="applyCustomRange()">
                             </div>
                             <canvas id="movement-chart" height="160"></canvas>
                         </div>
@@ -254,7 +262,6 @@
 
                     </div>
 
-                    <!-- Row 3 — Panels -->
                     <div class="bottom-row">
 
                         <!-- Top 5 Products -->

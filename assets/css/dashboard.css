@@ -101,34 +101,29 @@
     color: var(--primary);
 }
 
-/* Chart period toggle */
-.period-toggle {
-    display: flex;
-    background: var(--bg);
+/* Chart period */
+.chart-date-input {
+    padding: 7px 10px;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 3px;
-    gap: 2px;
-}
-
-.period-btn {
-    padding: 5px 12px;
-    border: none;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: var(--transition);
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 12.5px;
     font-family: var(--font);
+    outline: none;
+    transition: var(--transition);
 }
 
-.period-btn.active {
-    background: var(--card);
-    color: var(--primary);
-    font-weight: 600;
-    box-shadow: var(--shadow-sm);
+.chart-date-input:focus {
+    border-color: var(--primary);
+}
+
+#chart-custom-range {
+    display: none;
+}
+
+#chart-custom-range.show {
+    display: flex;
 }
 
 /* Notification bell */
