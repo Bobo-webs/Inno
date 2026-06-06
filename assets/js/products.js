@@ -353,7 +353,6 @@ async function loadCategories() {
 
     allCategories = data || [];
     document.getElementById('categories-count').textContent = allCategories.length;
-    filterCategories();
 }
 
 window.filterCategories = function () {
@@ -586,7 +585,11 @@ document.addEventListener('keydown', function (e) {
     }
 
     /* Load data */
-    await Promise.all([loadCategories(), loadProducts()]);
+    await loadCategories();
+    await loadProducts();
+    filterCategories();
+    document.getElementById('products-count').textContent = allProducts.length;
+    document.getElementById('categories-count').textContent = allCategories.length;
 
     /* Update header */
     updateHeaderActions();
