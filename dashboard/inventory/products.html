@@ -6,11 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products & Catalogues</title>
 
+  <!-- External Styling -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+
+  <!-- Theme -->
   <script>
     (function () {
       const theme = localStorage.getItem('inno-theme') || 'light';
@@ -18,6 +21,7 @@
     })();
   </script>
 
+  <!-- Internal Styling -->
   <link rel="stylesheet" href="../../assets/css/global.css">
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
 
@@ -114,7 +118,7 @@
                 <thead>
                   <tr>
                     <th>Product</th>
-                    <th>Category</th>
+                    <th>Catalogue</th>
                     <th>Unit</th>
                     <th>Qty</th>
                     <th>Reorder</th>
@@ -304,9 +308,9 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Category <span>*</span></label>
+          <label class="form-label">Catalogue <span>*</span></label>
           <select class="form-control" id="product-category">
-            <option value="">Select category</option>
+            <option value="">Select catalogue</option>
           </select>
         </div>
         <div class="form-group">
@@ -374,7 +378,7 @@
         <button class="btn btn-outline" onclick="closeCatModal()">Cancel</button>
         <button class="btn btn-primary" id="cat-save-btn" onclick="saveCategory()">
           <i class="fa-solid fa-check"></i>
-          <span>Save Category</span>
+          <span>Save Catalogue</span>
         </button>
       </div>
     </div>

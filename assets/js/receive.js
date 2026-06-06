@@ -129,9 +129,14 @@ function updateSummaryChips() {
     const totalQty = allHistory.reduce((s, m) => s + (m.quantity || 0), 0);
     const totalValue = allHistory.reduce((s, m) => s + ((m.quantity || 0) * (m.unit_cost || 0)), 0);
 
-    document.getElementById('chip-total').textContent = `${allHistory.length} entr${allHistory.length !== 1 ? 'ies' : 'y'}`;
-    document.getElementById('chip-qty').textContent = `${totalQty.toLocaleString()} units received`;
-    document.getElementById('chip-value').textContent = `${formatCurrency(totalValue)} total value`;
+    document.getElementById('chip-total').innerHTML =
+        `${allHistory.length} <span>entr${allHistory.length !== 1 ? 'ies' : 'y'}</span>`;
+
+    document.getElementById('chip-qty').innerHTML =
+        `${totalQty.toLocaleString()} <span>units received</span>`;
+
+    document.getElementById('chip-value').innerHTML =
+        `${formatCurrency(totalValue)} <span>total value</span>`;
 }
 
 /* ── Filter history ── */

@@ -1,8 +1,4 @@
-/* ============================================================
-   assets/js/suppliers.js
-   Suppliers page — root_admin and manager only for CUD
-   accountant can view only
-   ============================================================ */
+/* ==== SUPPLIERS.JS ==== */
 
 let allSuppliers = [];
 let filteredSuppliers = [];
@@ -391,9 +387,7 @@ document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeDrawer(); closeDeleteModal(); }
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ══════ INIT ══════ */
 (async function init() {
     let waited = 0;
     while (!window.currentUser && waited < 5000) {

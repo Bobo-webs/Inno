@@ -2466,10 +2466,11 @@ textarea.form-control {
     margin-top: 2px;
 }
 
-#chip-qty {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary);
+#chip-total>span,
+#chip-qty>span,
+#chip-value>span {
+    color: var(--text-muted);
+    font-weight: 400;
 }
 
 /* ── New stock preview ── */

@@ -1,4 +1,4 @@
-/* ==== PRODUCTS.JS ==== */
+/* ==== PRODUCTS AND CATALOGUES.JS ==== */
 
 /* ── State ── */
 let allProducts = [];
@@ -234,7 +234,7 @@ window.openProductDrawer = async function (productId = null) {
 
     /* Populate category dropdown */
     const catSelect = document.getElementById('product-category');
-    catSelect.innerHTML = '<option value="">Select category</option>' +
+    catSelect.innerHTML = '<option value="">Select catalogue</option>' +
         allCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
     if (productId) {
@@ -376,7 +376,7 @@ function renderCategoriesTable() {
                     <div class="empty-state-icon"><i class="fa-solid fa-tag"></i></div>
                     <h3>No categories found</h3>
                     <p>Create categories to organise your products</p>
-                    ${canEdit ? '<button class="btn btn-primary" onclick="openCatModal()"><i class="fa-solid fa-plus"></i> Add Category</button>' : ''}
+                    ${canEdit ? '<button class="btn btn-primary" onclick="openCatModal()"><i class="fa-solid fa-plus"></i> Add Catalogue</button>' : ''}
                 </div>
             </td></tr>`;
         footer.style.display = 'none';
@@ -411,7 +411,7 @@ function renderCategoriesTable() {
         `${filteredCategories.length} categor${filteredCategories.length !== 1 ? 'ies' : 'y'}`;
 }
 
-/* ── Category Modal ── */
+/* ── Catalogue/Category Modal ── */
 window.openCatModal = function (catId = null) {
     document.getElementById('cat-id').value = catId || '';
     document.getElementById('cat-modal-title').textContent = catId ? 'Edit Catalogue' : 'Add Catalogue';
@@ -441,7 +441,7 @@ window.saveCategory = async function () {
     const desc = document.getElementById('cat-desc').value.trim();
     const btn = document.getElementById('cat-save-btn');
 
-    if (!name) { showToast('Category name is required.', 'error'); return; }
+    if (!name) { showToast('Catalogue name is required.', 'error'); return; }
 
     btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
@@ -458,21 +458,21 @@ window.saveCategory = async function () {
 
     if (error) {
         if (error.code === '23505') {
-            showToast('A category with this name already exists.', 'error');
+            showToast('A catalogue with this name already exists.', 'error');
         } else {
-            showToast(error.message || 'Failed to save category.', 'error');
+            showToast(error.message || 'Failed to save catalogue.', 'error');
         }
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Category</span>';
+        btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Catalogue</span>';
         return;
     }
 
-    showToast(id ? 'Category updated.' : 'Category added.', 'success');
+    showToast(id ? 'Catalogue updated.' : 'Catalogue added.', 'success');
     closeCatModal();
     await loadCategories();
-    await loadProducts(); /* Refresh products to update category names */
+    await loadProducts();
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Category</span>';
+    btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Catalogue</span>';
 };
 
 /* ═══════ DELETE ═══════ */
@@ -480,11 +480,11 @@ window.saveCategory = async function () {
 window.openDeleteModal = function (type, id, name) {
     deleteTarget = { type, id, name };
     document.getElementById('delete-modal-title').textContent =
-        `Delete ${type === 'product' ? 'Product' : 'Category'}?`;
+        `Delete ${type === 'product' ? 'Product' : 'Catalogue'}?`;
     document.getElementById('delete-modal-body').textContent =
         type === 'product'
             ? `"${name}" will be permanently removed. Stock history will be preserved.`
-            : `"${name}" will be deleted. Products in this category will become uncategorised.`;
+            : `"${name}" will be deleted. Products in this catalogue will become uncatalogued.`;
     document.getElementById('delete-modal-backdrop').classList.add('show');
 };
 
