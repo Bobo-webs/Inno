@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Products & Categories</title>
+  <title>Products & Catalogues</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,8 +35,6 @@
           <i class="fa-solid fa-bars-staggered"></i>
         </button>
         <div class="topbar-title">
-          <!-- <h1>Inventory</h1>
-          <p>Manage products and categories</p> -->
           <p id="topbar-date"></p>
         </div>
         <div class="topbar-right">
@@ -56,11 +54,10 @@
         <!-- Page header -->
         <div class="page-header">
           <div class="page-header-text">
-            <h2>Products & Categories</h2>
+            <h2>Products & Catalogues</h2>
             <p>Track every item and organise your inventory structure</p>
           </div>
           <div class="page-header-actions" id="header-actions">
-            <!-- Populated by JS based on active tab + role -->
           </div>
         </div>
 
@@ -95,7 +92,7 @@
                 oninput="filterProducts()">
             </div>
             <select class="filter-select" id="products-cat-filter" onchange="filterProducts()">
-              <option value="">All Categories</option>
+              <option value="">All Catalogues</option>
             </select>
             <select class="filter-select" id="products-status-filter" onchange="filterProducts()">
               <option value="">All Status</option>
@@ -209,20 +206,20 @@
           </div>
         </div>
 
-        <!-- ══ CATEGORIES PANEL ══ -->
+        <!-- ══ CATALOGUES/CATEGORIES PANEL ══ -->
         <div id="panel-categories" style="display:none;">
 
           <!-- Read-only notice for staff -->
           <div class="readonly-notice" id="categories-readonly-notice" style="display:none;">
             <i class="fa-solid fa-circle-info"></i>
-            You have read-only access to categories.
+            You have read-only access to catalogues.
           </div>
 
           <!-- Toolbar -->
           <div class="toolbar">
             <div class="search-wrap">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" class="search-input" id="categories-search" placeholder="Search categories..."
+              <input type="text" class="search-input" id="categories-search" placeholder="Search catalogues..."
                 oninput="filterCategories()">
             </div>
           </div>
@@ -233,7 +230,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Category Name</th>
+                    <th>Catalogue Name</th>
                     <th>Description</th>
                     <th>Products</th>
                     <th id="categories-actions-col"></th>
@@ -359,13 +356,13 @@
           <i class="fa-solid fa-tag"></i>
         </div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text-primary);" id="cat-modal-title">Add Category</div>
-          <div style="font-size:12px;color:var(--text-muted);">Categories help organise your products</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text-primary);" id="cat-modal-title">Add Catalogue</div>
+          <div style="font-size:12px;color:var(--text-muted);">Catalogues help organise your products</div>
         </div>
       </div>
       <input type="hidden" id="cat-id">
       <div class="form-group">
-        <label class="form-label">Category Name <span>*</span></label>
+        <label class="form-label">Catalogue Name <span>*</span></label>
         <input type="text" class="form-control" id="cat-name" placeholder="e.g. Gaskets">
       </div>
       <div class="form-group" style="margin-bottom:24px;">

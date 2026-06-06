@@ -81,7 +81,7 @@ function updateHeaderActions() {
     } else {
         el.innerHTML = `
             <button class="btn btn-primary" onclick="openCatModal()">
-                <i class="fa-solid fa-plus"></i> Add Category
+                <i class="fa-solid fa-plus"></i> Add Catalogue
             </button>`;
     }
 }
@@ -109,7 +109,7 @@ async function loadProducts() {
     /* Populate category filter */
     const cats = [...new Set(allProducts.map(p => p.categories?.name).filter(Boolean))].sort();
     const catFilter = document.getElementById('products-cat-filter');
-    catFilter.innerHTML = '<option value="">All Categories</option>' +
+    catFilter.innerHTML = '<option value="">All Catalogues</option>' +
         cats.map(c => `<option value="${c}">${c}</option>`).join('');
 
     filterProducts();
@@ -414,7 +414,7 @@ function renderCategoriesTable() {
 /* ── Category Modal ── */
 window.openCatModal = function (catId = null) {
     document.getElementById('cat-id').value = catId || '';
-    document.getElementById('cat-modal-title').textContent = catId ? 'Edit Category' : 'Add Category';
+    document.getElementById('cat-modal-title').textContent = catId ? 'Edit Catalogue' : 'Add Catalogue';
 
     if (catId) {
         const cat = allCategories.find(c => c.id === catId);
