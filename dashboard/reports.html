@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inno — Reports</title>
+
+    <!-- External Styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Theme -->
+    <script>
+        (function () {
+            const theme = localStorage.getItem('inno-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <!-- Internal Styling -->
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+        <div class="main-wrap">
+
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i
+                        class="fa-solid fa-bars-staggered"></i></button>
+                <div class="topbar-title">
+                    <p id="topbar-date"></p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
+                            id="theme-icon"></i></button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-body">
+
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Reports</h2>
+                        <p>Select a report, apply filters, generate a preview then export</p>
+                    </div>
+                </div>
+
+                <!-- ══ Report Cards ══ -->
+                <div class="reports-grid">
+
+                    <!-- 1. Stock Report -->
+                    <div class="report-card" id="card-stock">
+                        <div class="report-card-top">
+                            <div class="report-icon blue"><i class="fa-solid fa-boxes-stacked"></i></div>
+                            <div>
+                                <div class="report-name">Stock Report</div>
+                                <div class="report-desc">Current snapshot of all products — quantities, reorder levels
+                                    and status</div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="stock-cat">
+                                    <option value="">All Categories</option>
+                                </select>
+                                <select class="filter-select" id="stock-status">
+                                    <option value="">All Status</option>
+                                    <option value="in">In Stock</option>
+                                    <option value="low">Low Stock</option>
+                                    <option value="out">Out of Stock</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('stock')">
+                                <i class="fa-solid fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Stock Movement Report -->
+                    <div class="report-card" id="card-movement">
+                        <div class="report-card-top">
+                            <div class="report-icon green"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div>
+                                <div class="report-name">Stock Movement Report</div>
+                                <div class="report-desc">All receives, adjustments and PO outflows within a date range
+                                </div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="move-type">
+                                    <option value="">All Types</option>
+                                    <option value="receive">Receive</option>
+                                    <option value="adjustment">Adjustment</option>
+                                    <option value="out">Purchase Order</option>
+                                </select>
+                            </div>
+                            <div class="report-filter-row">
+                                <input type="date" class="filter-select" id="move-from">
+                                <span class="date-sep">to</span>
+                                <input type="date" class="filter-select" id="move-to">
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('movement')">
+                                <i class="fa-solid fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Purchase Order Report -->
+                    <div class="report-card" id="card-po">
+                        <div class="report-card-top">
+                            <div class="report-icon orange"><i class="fa-solid fa-file-invoice"></i></div>
+                            <div>
+                                <div class="report-name">Purchase Order Report</div>
+                                <div class="report-desc">All outgoing sales orders within a date range with approval
+                                    details</div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="po-status">
+                                    <option value="">All Status</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="submitted">Submitted</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="report-filter-row">
+                                <input type="date" class="filter-select" id="po-from">
+                                <span class="date-sep">to</span>
+                                <input type="date" class="filter-select" id="po-to">
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('po')">
+                                <i class="fa-solid fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Supplier Report -->
+                    <div class="report-card" id="card-supplier">
+                        <div class="report-card-top">
+                            <div class="report-icon teal"><i class="fa-solid fa-handshake"></i></div>
+                            <div>
+                                <div class="report-name">Supplier Report</div>
+                                <div class="report-desc">All suppliers with total receive counts and purchase values
+                                </div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="sup-status">
+                                    <option value="">All Suppliers</option>
+                                    <option value="active">Active Only</option>
+                                    <option value="inactive">Inactive Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('supplier')">
+                                <i class="fa-solid fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Inventory Valuation -->
+                    <div class="report-card" id="card-valuation">
+                        <div class="report-card-top">
+                            <div class="report-icon purple"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <div>
+                                <div class="report-name">Inventory Valuation</div>
+                                <div class="report-desc">Current stock value per product (qty × unit cost) with category
+                                    subtotals</div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="val-cat">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('valuation')">
+                                <i class="fa-solid fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 6. Low Stock Report -->
+                    <div class="report-card" id="card-lowstock">
+                        <div class="report-card-top">
+                            <div class="report-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div>
+                                <div class="report-name">Low Stock Report</div>
+                                <div class="report-desc">Items at or below reorder level — out of stock shown first
+                                </div>
+                            </div>
+                        </div>
+                        <div class="report-filters">
+                            <div class="report-filter-row">
+                                <select class="filter-select" id="low-cat">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="report-card-footer">
+                            <button class="btn-generate" onclick="generateReport('lowstock')">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ══ Report Preview ══ -->
+                <div class="report-preview" id="report-preview">
+                    <div class="preview-header">
+                        <div>
+                            <div class="preview-title" id="preview-title">—</div>
+                            <div class="preview-meta" id="preview-meta">—</div>
+                        </div>
+                        <div class="preview-actions">
+                            <button class="btn btn-outline btn-sm" onclick="exportReport('csv')">
+                                <i class="fa-solid fa-file-csv"></i> CSV
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="exportReport('excel')">
+                                <i class="fa-solid fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div id="preview-content"></div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script src="../assets/js/supabase.js"></script>
+    <script src="../assets/js/auth-guard.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/reports.js"></script>
+</body>
+
+</html>

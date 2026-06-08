@@ -3894,3 +3894,256 @@ textarea.form-control {
     text-align: center;
     margin-right: 4px;
 }
+
+
+/* ── REPORTS PAGE ── */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 1100px) {
+    .reports-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.report-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: var(--transition);
+}
+
+.report-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.report-card.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.report-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.report-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.report-icon.blue {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.report-icon.green {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.report-icon.orange {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.report-icon.purple {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.report-icon.red {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.report-icon.teal {
+    background: #f0fdfa;
+    color: #0d9488;
+}
+
+.report-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.report-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.5;
+}
+
+/* ── Report filters ── */
+.report-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.report-filter-row .filter-select,
+.report-filter-row input[type="date"] {
+    flex: 1;
+    min-width: 120px;
+    font-size: 12px;
+    padding: 7px 10px;
+}
+
+.date-sep {
+    font-size: 12px;
+    color: var(--text-muted);
+    align-self: center;
+    flex-shrink: 0;
+}
+
+.report-card-footer {
+    margin-top: auto;
+}
+
+.btn-generate {
+    width: 100%;
+    justify-content: center;
+    background: var(--primary);
+    color: white;
+    padding: 9px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: var(--transition);
+}
+
+.btn-generate:hover {
+    background: #1e40af;
+}
+
+.btn-generate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Report preview section ── */
+.report-preview {
+    display: none;
+    animation: fadeUp 0.3s ease;
+}
+
+.report-preview.show {
+    display: block;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.preview-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.preview-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Reuse table-card from dashboard.css — no extra needed */
+
+/* ── Summary row at bottom of valuation report ── */
+.summary-row td {
+    font-weight: 700 !important;
+    background: var(--bg) !important;
+    color: var(--text-primary) !important;
+    border-top: 2px solid var(--border) !important;
+}
+
+/* ── Low stock urgency ── */
+.urgency-out {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+.urgency-low {
+    color: #ea580c;
+    font-weight: 600;
+}
+
+/* ── Empty preview ── */
+.preview-empty {
+    padding: 48px 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+}
+
+.preview-empty i {
+    font-size: 28px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.preview-empty p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.fade-in {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeUp 0.3s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

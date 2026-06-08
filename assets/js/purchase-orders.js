@@ -295,9 +295,7 @@ window.goPage = function (page) {
     renderTable();
 };
 
-/* ════════════════════════════════════════
-   DRAWER — Create / Edit
-════════════════════════════════════════ */
+/* ══════ DRAWER ══════ */
 
 window.openDrawer = function (poId = null) {
     lineItemCount = 0;
@@ -326,7 +324,7 @@ window.openDrawer = function (poId = null) {
         document.getElementById('f-client-contact').value = '';
         document.getElementById('f-expected-date').value = '';
         document.getElementById('f-notes').value = '';
-        addLineItem(); /* Start with one empty row */
+        addLineItem();
     }
 
     document.getElementById('drawer-backdrop').classList.add('show');
@@ -409,11 +407,9 @@ window.onLineProductChange = function (rowId) {
     const cost = selected.dataset.cost || 0;
     const stock = parseInt(selected.dataset.stock) || 0;
 
-    /* Auto-fill SKU and cost */
     skuEl.value = sku;
     if (!costEl.value) costEl.value = cost;
 
-    /* Stock hint */
     hintEl.className = 'li-stock-hint' + (stock <= 0 ? ' danger' : stock <= 10 ? ' low' : '');
     hintEl.textContent = stock <= 0 ? 'Out of stock' : `${stock.toLocaleString()} in stock`;
 
@@ -611,7 +607,7 @@ window.savePO = async function (status) {
         : '<i class="fa-solid fa-paper-plane"></i> Submit for Approval';
 };
 
-/* ── Submit PO (from table action) ── */
+/* ── Submit PO ── */
 window.submitPO = async function (poId) {
     const { error } = await db
         .from('purchase_orders')
@@ -623,9 +619,7 @@ window.submitPO = async function (poId) {
     await loadPOs();
 };
 
-/* ════════════════════════════════════════
-   VIEW MODAL
-════════════════════════════════════════ */
+/* ══════ VIEW MODAL ══════ */
 
 window.viewPO = function (poId) {
     const po = allPOs.find(p => p.id === poId);
@@ -715,9 +709,7 @@ window.closeViewModal = function () {
     document.getElementById('view-modal').classList.remove('show');
 };
 
-/* ════════════════════════════════════════
-   CONFIRM MODAL
-════════════════════════════════════════ */
+/* ══════ CONFIRM MODAL ══════ */
 
 window.openConfirm = function (action, poId) {
     confirmAction = action;
@@ -797,7 +789,6 @@ window.executeConfirmAction = async function () {
         });
         if (rpcErr) { error = rpcErr; }
         else if (data?.error) {
-            /* Show stock shortage details */
             const items = data.items ? '\n\n' + data.items.join('\n') : '';
             showToast(data.error + items, 'error');
             btn.disabled = false;
@@ -834,7 +825,6 @@ window.executeConfirmAction = async function () {
         }
 
     } else if (confirmAction === 'delete') {
-        /* Delete items first then PO */
         await db.from('purchase_order_items').delete().eq('po_id', confirmTargetId);
         const { error: delErr } = await db.from('purchase_orders').delete().eq('id', confirmTargetId);
         error = delErr;
@@ -899,9 +889,7 @@ document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeDrawer(); closeViewModal(); closeConfirmModal(); }
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ══════ INIT ══════ */
 (async function init() {
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
@@ -920,24 +908,18 @@ document.addEventListener('keydown', function (e) {
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
     document.getElementById('topbar-avatar').textContent = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
-    /* Signature display */
     document.getElementById('sig-display').textContent =
         `${window.currentUser.full_name || window.currentUser.username} (@${window.currentUser.username})`;
 
-    /* Hide value column and stat for staff */
     if (!showValue) {
         document.getElementById('th-value').style.display = 'none';
         document.getElementById('stat-value-card').style.display = 'none';
     }
 
-    /* Theme */
     applyTheme(localStorage.getItem('inno-theme') || 'light');
 
-    /* Sidebar */
     renderSidebar('purchase-orders', userRole);
-
-    /* Load data */
     await Promise.all([loadProducts(), loadPOs()]);
 })();

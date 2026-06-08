@@ -405,7 +405,7 @@ document.addEventListener('keydown', function (e) {
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
     document.getElementById('topbar-avatar').textContent = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     /* Hide add button for accountant */
     if (!canEdit) document.getElementById('add-supplier-btn').style.display = 'none';
