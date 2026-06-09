@@ -1,10 +1,4 @@
-/* ============================================================
-   assets/js/users.js
-   Users page — root_admin only
-   Tab 1: User management — role changes, activate/deactivate
-   Tab 2: Activity log — full audit trail
-   Page state (tab + page number) persisted to localStorage
-   ============================================================ */
+/* ==== USERS.JS ==== */
 
 /* ── State ── */
 let allUsers = [];
@@ -124,9 +118,7 @@ window.switchTab = function (tab, persist = true) {
     if (persist) saveState();
 };
 
-/* ════════════════════════════════════════
-   USERS TAB
-════════════════════════════════════════ */
+/* ═════ USERS TAB ═════ */
 
 async function loadUsers() {
     const { data, error } = await db
@@ -343,16 +335,14 @@ window.saveUser = async function () {
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Changes</span>';
 };
 
-/* ════════════════════════════════════════
-   ACTIVITY TAB
-════════════════════════════════════════ */
+/* ══════ ACTIVITY TAB ══════ */
 
 async function loadActivity() {
     const { data, error } = await db
         .from('activity_logs')
         .select('id, username, action, entity_type, entity_name, details, created_at')
         .order('created_at', { ascending: false })
-        .limit(500); /* Cap at 500 for performance */
+        .limit(500);
 
     if (error) { showToast('Failed to load activity log.', 'error'); return; }
 
@@ -526,7 +516,7 @@ function renderPagination(containerId, pages, currentPage, onPageClick) {
     pag.innerHTML = html;
 }
 
-/* ── logActivity utility (also used by other pages via logger.js) ── */
+/* ── logActivity utility ── */
 window.logActivity = async function (action, entityType, entityId, entityName, details) {
     try {
         const user = window.currentUser;
@@ -541,7 +531,7 @@ window.logActivity = async function (action, entityType, entityId, entityName, d
             details: details || null,
             created_at: new Date().toISOString()
         });
-    } catch (_) { /* silent — logging must never break the main flow */ }
+    } catch (_) { }
 };
 
 /* ── Close on backdrop/keyboard ── */
@@ -552,9 +542,7 @@ document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeDrawer();
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ═════ INIT ═════ */
 (async function init() {
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
@@ -568,7 +556,7 @@ document.addEventListener('keydown', function (e) {
 
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
     document.getElementById('topbar-avatar').textContent = initials;
-    document.getElementById('topbar-username').textContent = '@' + window.currentUser.username;
+    document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
     applyTheme(localStorage.getItem('inno-theme') || 'light');
     renderSidebar('users', window.currentUser.role);
