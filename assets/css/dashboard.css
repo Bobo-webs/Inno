@@ -4317,7 +4317,6 @@ textarea.form-control {
 
 .role-option.selected {
     border-color: var(--primary);
-    background: var(--primary-soft);
 }
 
 .role-option-icon {
