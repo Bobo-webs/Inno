@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+
+    <!-- External Styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Theme -->
+    <script>
+        (function () {
+            const theme = localStorage.getItem('inno-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <!-- Internal Styling -->
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+        <div class="main-wrap">
+
+            <header class="topbar">
+                <button class="topbar-hamburger" onclick="toggleSidebar()"><i
+                        class="fa-solid fa-bars-staggered"></i></button>
+                <div class="topbar-title">
+                    <p id="topbar-date"></p>
+                </div>
+                <div class="topbar-right">
+                    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-sun"
+                            id="theme-icon"></i></button>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbar-avatar">--</div>
+                        <span class="topbar-username" id="topbar-username">...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-body">
+
+                <div class="page-header">
+                    <div class="page-header-text">
+                        <h2>Settings</h2>
+                        <p>System configuration and preferences</p>
+                    </div>
+                </div>
+
+                <div class="settings-wrap" id="settings-wrap">
+
+                    <!-- Skeleton while loading -->
+                    <div class="settings-card" id="skeleton-card">
+                        <div class="settings-card-header">
+                            <div class="skeleton" style="width:36px;height:36px;border-radius:9px;flex-shrink:0;"></div>
+                            <div>
+                                <div class="skeleton" style="height:14px;width:140px;margin-bottom:6px;"></div>
+                                <div class="skeleton" style="height:11px;width:200px;"></div>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="skeleton" style="height:13px;width:80%;margin-bottom:14px;"></div>
+                            <div class="skeleton" style="height:38px;border-radius:9px;margin-bottom:14px;"></div>
+                            <div class="skeleton" style="height:13px;width:60%;margin-bottom:14px;"></div>
+                            <div class="skeleton" style="height:38px;border-radius:9px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Real content — hidden until loaded -->
+                    <div id="real-settings" style="display:none;display:flex;flex-direction:column;gap:20px;">
+
+                        <!-- ── Section 1: Company Profile ── -->
+                        <div class="settings-card fade-in">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon blue"><i class="fa-solid fa-building"></i></div>
+                                <div>
+                                    <div class="settings-card-title">Company Profile</div>
+                                    <div class="settings-card-desc">Shown on exported reports and documents</div>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Company Name <span>*</span></label>
+                                        <input type="text" class="form-control" id="s-company-name"
+                                            placeholder="e.g. Inno Industries Ltd">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Currency Symbol</label>
+                                        <input type="text" class="form-control" id="s-currency-symbol"
+                                            placeholder="e.g. $ or ₦" maxlength="3">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Currency Position</label>
+                                        <select class="form-control" id="s-currency-position">
+                                            <option value="before">Before amount — $500</option>
+                                            <option value="after">After amount — 500$</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Date Format</label>
+                                        <select class="form-control" id="s-date-format">
+                                            <option value="DD/MM/YYYY">DD/MM/YYYY — 25/05/2026</option>
+                                            <option value="MM/DD/YYYY">MM/DD/YYYY — 05/25/2026</option>
+                                            <option value="YYYY-MM-DD">YYYY-MM-DD — 2026-05-25</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label">Company Address</label>
+                                    <textarea class="form-control" id="s-company-address"
+                                        placeholder="Full address — appears on exported reports..."></textarea>
+                                </div>
+                            </div>
+                            <div class="settings-card-footer">
+                                <span class="save-indicator" id="profile-saved"></span>
+                                <button class="btn btn-primary btn-sm" onclick="saveSection('profile')">
+                                    <i class="fa-solid fa-check"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ── Section 2: Inventory Rules ── -->
+                        <div class="settings-card fade-in" style="animation-delay:0.05s;">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon green"><i class="fa-solid fa-boxes-stacked"></i></div>
+                                <div>
+                                    <div class="settings-card-title">Inventory Rules</div>
+                                    <div class="settings-card-desc">Control how stock behaves across the system</div>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+
+                                <div class="form-group" style="margin-bottom:20px;">
+                                    <label class="form-label">Default Reorder Level</label>
+                                    <input type="number" class="form-control" id="s-low-stock-default" placeholder="10"
+                                        min="0" style="max-width:180px;">
+                                    <div class="form-hint">Applied to new products unless overridden individually</div>
+                                </div>
+
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <div class="toggle-label">Allow Negative Stock</div>
+                                        <div class="toggle-hint">When off, the system blocks any action that would take
+                                            stock below zero. Recommended to keep this off.</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="s-allow-negative">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <div class="toggle-label">Require Notes on Adjustments</div>
+                                        <div class="toggle-hint">Forces users to enter a note whenever they record a
+                                            stock adjustment. Improves audit trail quality.</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="s-require-adj-notes">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div class="settings-card-footer">
+                                <span class="save-indicator" id="inventory-saved"></span>
+                                <button class="btn btn-primary btn-sm" onclick="saveSection('inventory')">
+                                    <i class="fa-solid fa-check"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ── Section 3: Appearance ── -->
+                        <div class="settings-card fade-in" style="animation-delay:0.1s;">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon purple"><i class="fa-solid fa-palette"></i></div>
+                                <div>
+                                    <div class="settings-card-title">Appearance</div>
+                                    <div class="settings-card-desc">Choose how the system looks across all devices</div>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <label class="form-label" style="margin-bottom:12px;">Theme</label>
+                                <div class="theme-options">
+                                    <div class="theme-option" id="theme-light" onclick="selectTheme('light')">
+                                        <div class="theme-option-preview light">
+                                            <div class="sidebar-mock"></div>
+                                            <div class="content-mock"></div>
+                                        </div>
+                                        <div class="theme-option-label">Light</div>
+                                    </div>
+                                    <div class="theme-option" id="theme-dark" onclick="selectTheme('dark')">
+                                        <div class="theme-option-preview dark">
+                                            <div class="sidebar-mock"></div>
+                                            <div class="content-mock"></div>
+                                        </div>
+                                        <div class="theme-option-label">Dark</div>
+                                    </div>
+                                    <div class="theme-option" id="theme-system" onclick="selectTheme('system')">
+                                        <div class="theme-option-preview system">
+                                            <div class="sidebar-mock"></div>
+                                            <div class="content-mock"></div>
+                                        </div>
+                                        <div class="theme-option-label">System</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="settings-card-footer">
+                                <span class="save-indicator" id="appearance-saved"></span>
+                                <button class="btn btn-primary btn-sm" onclick="saveSection('appearance')">
+                                    <i class="fa-solid fa-check"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ── Section 4: Danger Zone ── -->
+                        <div class="settings-card fade-in"
+                            style="animation-delay:0.15s;border-color:rgba(220,38,38,0.2);">
+                            <div class="settings-card-header" style="border-bottom-color:rgba(220,38,38,0.15);">
+                                <div class="settings-card-icon red"><i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div>
+                                    <div class="settings-card-title" style="color:var(--danger);">Danger Zone</div>
+                                    <div class="settings-card-desc">Irreversible actions — proceed with caution</div>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="danger-action">
+                                    <div class="danger-action-info">
+                                        <div class="danger-action-label">Clear Activity Logs</div>
+                                        <div class="danger-action-desc">Permanently deletes all entries from the
+                                            activity log. Stock data, products and orders are not affected. This cannot
+                                            be undone.</div>
+                                    </div>
+                                    <button class="btn btn-danger btn-sm" style="flex-shrink:0;"
+                                        onclick="openClearLogsModal()">
+                                        <i class="fa-solid fa-trash"></i> Clear Logs
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ══ CLEAR LOGS CONFIRM MODAL ══ -->
+    <div class="modal-backdrop" id="clear-logs-modal">
+        <div class="modal">
+            <div class="modal-icon" style="background:var(--danger-soft);color:var(--danger);">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+            <h3>Clear all activity logs?</h3>
+            <p>This will permanently delete every entry from the activity log. This action cannot be undone.</p>
+            <p style="margin-top:-14px;">Type <strong>CLEAR LOGS</strong> below to confirm.</p>
+            <div class="form-group" style="margin-bottom:20px;">
+                <input type="text" class="form-control" id="clear-confirm-input"
+                    placeholder="Type CLEAR LOGS to confirm" oninput="onClearInput()">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeClearLogsModal()">Cancel</button>
+                <button class="btn btn-danger" id="clear-confirm-btn" onclick="confirmClearLogs()" disabled>
+                    <i class="fa-solid fa-trash"></i> Clear All Logs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/toast.js"></script>
+    <script src="../assets/js/supabase.js"></script>
+    <script src="../assets/js/auth-guard.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <!-- <script src="../assets/js/logger.js"></script> -->
+    <script src="../assets/js/settings.js"></script>
+</body>
+
+</html>
