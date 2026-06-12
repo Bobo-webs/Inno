@@ -360,7 +360,7 @@ window.addLineItem = function (productId = '', sku = '', qty = '', cost = '') {
         </div>
         <div>
             <input type="text" class="form-control li-sku" id="${id}-sku"
-                   placeholder="SKU" value="${sku}" disabled>
+                   placeholder="ITEM NO." value="${sku}" disabled>
         </div>
         <div>
             <input type="number" class="form-control li-qty" id="${id}-qty"
