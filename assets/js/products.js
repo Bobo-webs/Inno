@@ -293,6 +293,7 @@ window.saveProduct = async function () {
     };
 
     let error;
+    let insertedId = null;
 
     if (id) {
         /* Update */
@@ -302,7 +303,13 @@ window.saveProduct = async function () {
         payload.quantity = qty;
         payload.is_active = true;
         payload.created_by = window.currentUser.id;
-        ({ error } = await db.from('products').insert(payload));
+        const { data: inserted, error: insertErr } = await db
+            .from('products')
+            .insert(payload)
+            .select('id')
+            .single();
+        error = insertErr;
+        insertedId = inserted?.id;
     }
 
     if (error) {
@@ -312,6 +319,18 @@ window.saveProduct = async function () {
         return;
     }
 
+    if (id) {
+        const original = allProducts.find(p => p.id === id);
+        const changes = [];
+        if (original.name !== name) changes.push(`Name: "${original.name}" → "${name}"`);
+        if ((original.sku || '') !== (sku || '')) changes.push(`SKU: "${original.sku || '—'}" → "${sku || '—'}"`);
+        if (original.category_id !== catId) changes.push(`Category: "${original.categories?.name || '—'}" → "${allCategories.find(c => c.id === catId)?.name || '—'}"`);
+        if ((original.unit || '') !== (unit || '')) changes.push(`Unit: "${original.unit || '—'}" → "${unit || '—'}"`);
+        if (original.reorder_level !== reorder) changes.push(`Reorder Level: ${original.reorder_level} → ${reorder}`);
+        await logActivity('edit', 'product', id, name, changes.length ? changes.join(' · ') : 'No changes detected');
+    } else {
+        await logActivity('create', 'product', insertedId, name, `Category: ${allCategories.find(c => c.id === catId)?.name || '—'} · Unit: ${unit} · Initial Qty: ${qty}`);
+    }
     showToast(id ? 'Product updated successfully.' : 'Product added successfully.', 'success');
     closeProductDrawer();
     await loadProducts();
@@ -452,7 +471,8 @@ window.saveCategory = async function () {
         ({ error } = await db.from('categories').update(payload).eq('id', id));
     } else {
         payload.created_by = window.currentUser.id;
-        ({ error } = await db.from('categories').insert(payload));
+        const { data: inserted, error: insertErr } = await db.from('categories').insert(payload).select('id').single();
+        error = insertErr;
     }
 
     if (error) {
@@ -466,6 +486,16 @@ window.saveCategory = async function () {
         return;
     }
 
+
+    if (id) {
+        const original = allCategories.find(c => c.id === id);
+        const changes = [];
+        if (original.name !== name) changes.push(`Name: "${original.name}" → "${name}"`);
+        if ((original.description || '') !== (desc || '')) changes.push(`Description updated`);
+        await logActivity('edit', 'category', id, name, changes.length ? changes.join(' · ') : 'No changes detected');
+    } else {
+        await logActivity('create', 'category', inserted?.id, name, desc ? `Description: ${desc}` : null);
+    }
     showToast(id ? 'Catalogue updated.' : 'Catalogue added.', 'success');
     closeCatModal();
     await loadCategories();
@@ -519,6 +549,15 @@ window.confirmDelete = async function () {
         return;
     }
 
+    await logActivity(
+        'delete',
+        deleteTarget.type,
+        deleteTarget.id,
+        deleteTarget.name,
+        deleteTarget.type === 'product'
+            ? `Soft deleted — stock history preserved`
+            : `Hard deleted — ${allProducts.filter(p => p.category_id === deleteTarget.id).length} products uncategorised`
+    );
     showToast(`${deleteTarget.name} deleted successfully.`, 'success');
     closeDeleteModal();
 
