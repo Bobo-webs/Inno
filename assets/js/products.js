@@ -279,7 +279,8 @@ window.saveProduct = async function () {
     const btn = document.getElementById('product-save-btn');
 
     if (!name) { showToast('Product name is required.', 'error'); return; }
-    if (!catId) { showToast('Please select a category.', 'error'); return; }
+    if (!catId) { showToast('Please select a catalogue.', 'error'); return; }
+    if (!sku) { showToast('Please issue an Item Number.', 'error'); return; }
     if (!unit) { showToast('Please select a unit of measurement.', 'error'); return; }
     if (qty < 0) { showToast('Quantity cannot be negative.', 'error'); return; }
 
@@ -466,13 +467,19 @@ window.saveCategory = async function () {
 
     const payload = { name, description: desc || null };
     let error;
+    let insertedCatId = null;
 
     if (id) {
         ({ error } = await db.from('categories').update(payload).eq('id', id));
     } else {
         payload.created_by = window.currentUser.id;
-        const { data: inserted, error: insertErr } = await db.from('categories').insert(payload).select('id').single();
+        const { data: inserted, error: insertErr } = await db
+            .from('categories')
+            .insert(payload)
+            .select('id')
+            .single();
         error = insertErr;
+        insertedCatId = inserted?.id;
     }
 
     if (error) {
@@ -494,12 +501,13 @@ window.saveCategory = async function () {
         if ((original.description || '') !== (desc || '')) changes.push(`Description updated`);
         await logActivity('edit', 'category', id, name, changes.length ? changes.join(' · ') : 'No changes detected');
     } else {
-        await logActivity('create', 'category', inserted?.id, name, desc ? `Description: ${desc}` : null);
+        await logActivity('create', 'category', insertedCatId, name, desc ? `Description: ${desc}` : null);
     }
     showToast(id ? 'Catalogue updated.' : 'Catalogue added.', 'success');
     closeCatModal();
     await loadCategories();
     await loadProducts();
+    filterCategories();
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Save Catalogue</span>';
 };

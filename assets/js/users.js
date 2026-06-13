@@ -14,7 +14,7 @@ const STORAGE_KEY = 'inno_users_page_state';
 const ROLES = [
     {
         key: 'root_admin',
-        label: 'Root Admin',
+        label: 'Admin',
         desc: 'Full system access — users, settings, everything',
         icon: 'fa-solid fa-crown',
         color: '#7c3aed', bg: '#f5f3ff'
