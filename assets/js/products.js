@@ -182,7 +182,7 @@ function renderProductsTable() {
                         <div class="product-avatar">${initials}</div>
                         <div>
                             <div class="product-name">${p.name}</div>
-                            <div class="product-sku">${p.sku || 'No SKU'}</div>
+                            <div class="product-sku">${p.sku || 'No Item Number'}</div>
                         </div>
                     </div>
                 </td>
@@ -279,8 +279,8 @@ window.saveProduct = async function () {
     const btn = document.getElementById('product-save-btn');
 
     if (!name) { showToast('Product name is required.', 'error'); return; }
-    if (!catId) { showToast('Please select a catalogue.', 'error'); return; }
     if (!sku) { showToast('Please issue an Item Number.', 'error'); return; }
+    if (!catId) { showToast('Please select a catalogue.', 'error'); return; }
     if (!unit) { showToast('Please select a unit of measurement.', 'error'); return; }
     if (qty < 0) { showToast('Quantity cannot be negative.', 'error'); return; }
 

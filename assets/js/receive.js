@@ -221,7 +221,7 @@ function renderHistoryTable() {
                         <div class="product-avatar">${(m.products?.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}</div>
                         <div>
                             <div class="product-name">${m.products?.name || '—'}</div>
-                            <div class="product-sku">${m.products?.sku || 'No SKU'}</div>
+                            <div class="product-sku">${m.products?.sku || 'No Item Number'}</div>
                         </div>
                     </div>
                 </td>
@@ -399,6 +399,23 @@ window.submitReceive = async function () {
         return;
     }
 
+    const productName = allProducts.find(p => p.id === productId)?.name || productId;
+    const supplierName = allSuppliers.find(s => s.id === supplierId)?.name || supplierId;
+
+    if (isEditMode) {
+        const original = allHistory.find(m => m.id === movementId);
+        const changes = [];
+        if (original.quantity !== qty) changes.push(`Qty: ${original.quantity} → ${qty}`);
+        if (original.unit_cost !== cost) changes.push(`Unit Cost: ${formatCurrency(original.unit_cost)} → ${formatCurrency(cost)}`);
+        if (original.suppliers?.name !== supplierName) changes.push(`Supplier: "${original.suppliers?.name}" → "${supplierName}"`);
+        if (original.created_at?.split('T')[0] !== dateVal) changes.push(`Date: ${formatDate(original.created_at)} → ${formatDate(dateISO)}`);
+        await logActivity('edit', 'receive', movementId, productName, changes.length ? changes.join(' · ') : 'No changes detected');
+    } else {
+        await logActivity('receive', 'product', productId, productName,
+            `Qty: +${qty} · Supplier: ${supplierName} · Cost: ${formatCurrency(cost)} · Total: ${formatCurrency(qty * cost)}`
+        );
+    }
+
     showToast(
         isEditMode
             ? 'Receive entry updated successfully.'
@@ -495,6 +512,12 @@ window.confirmDelete = async function () {
         btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
         return;
     }
+
+    await logActivity(
+        'delete', 'receive', deleteTargetId,
+        entry.products?.name || '—',
+        `Reversed: Qty -${entry.quantity} · Supplier: ${entry.suppliers?.name || '—'} · Cost: ${formatCurrency(entry.unit_cost)}`
+    );
 
     showToast('Entry reversed and removed.', 'success');
     closeDeleteModal();

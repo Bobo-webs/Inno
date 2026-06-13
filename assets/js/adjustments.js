@@ -189,7 +189,7 @@ function renderTable() {
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
                     <div style="font-weight:600;">${a.products?.name || '—'}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">${a.products?.sku || 'No SKU'}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">${a.products?.sku || 'No Item Number'}</div>
                 </td>
                 <td>${typeBadge}</td>
                 <td>${qtyDisplay}</td>

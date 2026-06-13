@@ -276,7 +276,7 @@ function renderTable() {
                         </div>
                         <div>
                             <div class="product-name">${m.products?.name || '—'}</div>
-                            <div class="product-sku">${m.products?.sku || 'No SKU'}</div>
+                            <div class="product-sku">${m.products?.sku || 'No Item Number'}</div>
                         </div>
                     </div>
                 </td>
