@@ -20,8 +20,9 @@ function getInitials(name) {
 
 function formatDate(dateStr) {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric'
+    return new Date(dateStr).toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
     });
 }
 
@@ -146,6 +147,8 @@ window.filterAdjustments = function () {
 
         return matchSearch && matchType && matchReason && matchDate;
     });
+
+    filteredAdjustments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     currentPage = 1;
     renderTable();
@@ -311,7 +314,7 @@ window.openDrawer = function (editId = null) {
         document.getElementById('f-product').value = '';
         document.getElementById('f-qty').value = '';
         document.getElementById('f-reason').value = '';
-        document.getElementById('f-date').value = todayISO();
+        document.getElementById('f-date').value = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById('f-notes').value = '';
         document.getElementById('product-preview').classList.remove('show');
         document.getElementById('new-stock-preview').classList.remove('show', 'add', 'remove');
@@ -343,7 +346,9 @@ window.editAdjustment = function (id) {
     document.getElementById('f-product').value = entry.products?.id || '';
     document.getElementById('f-qty').value = Math.abs(entry.quantity);
     document.getElementById('f-reason').value = entry.reason || '';
-    document.getElementById('f-date').value = entry.created_at?.split('T')[0] || todayISO();
+    document.getElementById('f-date').value = entry.created_at
+        ? new Date(new Date(entry.created_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        : new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('f-notes').value = entry.notes || '';
 
     onProductChange();
@@ -383,7 +388,7 @@ window.saveAdjustment = async function () {
     /* Signed quantity — negative for remove */
     const signedQty = type === 'add' ? qty : -qty;
     const user = window.currentUser;
-    const dateISO = new Date(dateVal).toISOString();
+    const dateISO = editId ? new Date(dateVal).toISOString() : new Date().toISOString();
 
     let error;
 
@@ -458,6 +463,22 @@ window.saveAdjustment = async function () {
         return;
     }
 
+    const productName = allProducts.find(p => p.id === productId)?.name || productId;
+
+    if (editId) {
+        const original = allAdjustments.find(a => a.id === editId);
+        const changes = [];
+        const oldType = original.quantity > 0 ? 'add' : 'remove';
+        if (oldType !== type) changes.push(`Type: ${oldType} → ${type}`);
+        if (Math.abs(original.quantity) !== qty) changes.push(`Qty: ${Math.abs(original.quantity)} → ${qty}`);
+        if (original.reason !== reason) changes.push(`Reason: "${original.reason}" → "${reason}"`);
+        await logActivity('edit', 'adjustment', editId, productName, changes.length ? changes.join(' · ') : 'No changes detected');
+    } else {
+        await logActivity('adjust', 'product', productId, productName,
+            `${type === 'add' ? '+' : '-'}${qty} · Reason: ${reason}${notes ? ' · Notes: ' + notes : ''}`
+        );
+    }
+
     showToast(editId ? 'Adjustment updated.' : 'Adjustment recorded successfully.', 'success');
     closeDrawer();
     await Promise.all([loadProducts(), loadAdjustments()]);
@@ -516,6 +537,12 @@ window.confirmDelete = async function () {
         btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Undo Adjustment';
         return;
     }
+
+    await logActivity(
+        'delete', 'adjustment', deleteTargetId,
+        entry.products?.name || '—',
+        `Undone: ${entry.quantity > 0 ? '+' : ''}${entry.quantity} · Reason was: ${entry.reason || '—'}`
+    );
 
     showToast('Adjustment undone successfully.', 'success');
     closeDeleteModal();
@@ -589,7 +616,7 @@ document.addEventListener('keydown', function (e) {
     renderSidebar('adjustments', userRole);
 
     /* Default date */
-    document.getElementById('f-date').value = todayISO();
+    document.getElementById('f-date').value = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
     /* Load */
     await Promise.all([loadProducts(), loadAdjustments()]);
