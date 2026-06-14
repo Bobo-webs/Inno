@@ -570,9 +570,7 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+/* ════ INIT ════ */
 (async function init() {
     let waited = 0;
     while (!window.currentUser && waited < 5000) {
