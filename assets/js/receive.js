@@ -6,7 +6,7 @@ let allSuppliers = [];
 let allHistory = [];
 let filteredHistory = [];
 let currentPage = 1;
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 let deleteTargetId = null;
 let isEditMode = false;
 let userRole = null;
@@ -26,8 +26,9 @@ function formatCurrency(val) {
 
 function formatDate(dateStr) {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric'
+    return new Date(dateStr).toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
     });
 }
 
@@ -447,7 +448,9 @@ window.editEntry = function (movementId) {
         allSuppliers.find(s => s.name === entry.suppliers?.name)?.id || '';
     document.getElementById('qty-input').value = entry.quantity;
     document.getElementById('cost-input').value = entry.unit_cost;
-    document.getElementById('date-input').value = entry.created_at?.split('T')[0] || '';
+    document.getElementById('date-input').value = entry.created_at
+        ? new Date(new Date(entry.created_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        : new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('notes-input').value = entry.notes || '';
 
     onProductSelect();
@@ -466,7 +469,7 @@ function resetForm() {
     document.getElementById('supplier-select').value = '';
     document.getElementById('qty-input').value = '';
     document.getElementById('cost-input').value = '';
-    document.getElementById('date-input').value = todayISO();
+    document.getElementById('date-input').value = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('sku-input').value = '';
     document.getElementById('notes-input').value = '';
     document.getElementById('product-preview').classList.remove('show');
