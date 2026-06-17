@@ -1473,7 +1473,7 @@
     justify-content: center;
 }
 
-/* ── Drawer overlay ── */
+/* ── Drawer-overlay ── */
 .drawer-backdrop {
     display: none;
     position: fixed;
