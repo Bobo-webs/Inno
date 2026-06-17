@@ -1461,6 +1461,7 @@
 
 .drawer-footer {
     padding: 16px 24px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--border);
     display: flex;
     gap: 10px;
