@@ -3290,7 +3290,7 @@ tbody td {
     display: block;
 }
 
-.drawer {
+/* .drawer {
     position: fixed;
     top: 0;
     right: 0;
@@ -3374,7 +3374,7 @@ tbody td {
     flex: 1;
     justify-content: center;
     min-width: 120px;
-}
+} */
 
 /* ── Form ── */
 .form-group {
@@ -3508,7 +3508,7 @@ textarea.form-control {
     display: grid;
     grid-template-columns: 1fr 100px 110px 110px 36px;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 20px 12px;
     border-bottom: 1px solid var(--border);
     align-items: center;
 }
@@ -3550,9 +3550,11 @@ textarea.form-control {
 }
 
 .li-stock-hint {
+    position: absolute;
+    top: -18px;
+    left: 8%;
     font-size: 10.5px;
     color: var(--text-muted);
-    margin-top: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -28,7 +28,10 @@ function formatCurrency(val) {
 
 function formatDate(dateStr) {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(dateStr).toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
+    });
 }
 
 function applyTheme(theme) {
@@ -58,7 +61,7 @@ function statusBadge(status) {
 async function loadProducts() {
     const { data, error } = await db
         .from('products')
-        .select('id, name, sku, quantity, reorder_level, unit, unit_cost, categories(name)')
+        .select('id, name, sku, quantity, reorder_level, unit, categories(name)')
         .eq('is_active', true)
         .order('name', { ascending: true });
 
@@ -351,12 +354,12 @@ window.addLineItem = function (productId = '', sku = '', qty = '', cost = '') {
     ).join('');
 
     row.innerHTML = `
-        <div>
+        <div style="position: relative;">
+            <div class="li-stock-hint" id="${id}-hint"></div>
             <select class="form-control li-product" onchange="onLineProductChange('${id}')">
                 <option value="">— Select product —</option>
                 ${productOptions}
             </select>
-            <div class="li-stock-hint" id="${id}-hint"></div>
         </div>
         <div>
             <input type="text" class="form-control li-sku" id="${id}-sku"
@@ -416,7 +419,7 @@ window.onLineProductChange = function (rowId) {
     updatePOTotal();
 };
 
-/* ── SKU input change — find matching product ── */
+/* ── Item Number / SKU input change — find matching product ── */
 window.onLineSkuChange = function (rowId) {
     const row = document.getElementById(rowId);
     const skuEl = document.getElementById(`${rowId}-sku`);
@@ -489,25 +492,38 @@ window.savePO = async function (status) {
 
     /* Validate */
     if (!poNumber) { showToast('PO number is required.', 'error'); return; }
+    if (!expectedDate) { showToast('Date is required.', 'error'); return; }
     if (!clientName) { showToast('Client name is required.', 'error'); return; }
 
     /* Collect line items */
     const lineItems = [];
     let hasError = false;
 
-    document.querySelectorAll('.line-item-row').forEach(row => {
+    document.querySelectorAll('.line-item-row').forEach((row, index) => {
         const productId = row.querySelector('.li-product')?.value;
         const qty = parseInt(row.querySelector('.li-qty')?.value) || 0;
-        const cost = parseFloat(row.querySelector('.li-cost')?.value) || 0;
+        const cost = parseFloat(row.querySelector('.li-cost')?.value) || null;
         const selected = row.querySelector('.li-product')?.options[row.querySelector('.li-product').selectedIndex];
         const stock = parseInt(selected?.dataset.stock) || 0;
+        const lineNum = index + 1;
 
-        if (!productId || qty <= 0) { hasError = true; return; }
+        if (!productId) {
+            showToast(`Line item ${lineNum}: please select a product.`, 'error');
+            hasError = true; return;
+        }
+        if (qty <= 0) {
+            showToast(`Line item ${lineNum}: quantity must be greater than zero.`, 'error');
+            hasError = true; return;
+        }
+        if (!cost && cost !== 0) {
+            showToast(`Line item ${lineNum}: please enter a unit cost.`, 'error');
+            hasError = true; return;
+        }
 
         if (qty > stock && status === 'submitted') {
             const productName = selected?.text || 'A product';
             showToast(`${productName}: requested ${qty} but only ${stock} in stock.`, 'error');
-            hasError = true;
+            hasError = true; return;
         }
 
         lineItems.push({ product_id: productId, quantity: qty, unit_cost: cost });
