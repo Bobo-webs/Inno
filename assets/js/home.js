@@ -69,7 +69,7 @@ async function loadDashboard() {
         const role = window.currentUser.role;
         const selectFields = (role === 'staff')
             ? 'id, quantity, reorder_level, is_active'
-            : 'id, quantity, reorder_level, is_active';
+            : 'id, quantity, reorder_level, is_active, avg_unit_cost';
 
         const { data: products } = await db
             .from('products')
@@ -82,7 +82,10 @@ async function loadDashboard() {
 
         let stockValue = 0;
         if (user.role !== 'staff') {
-            stockValue = products?.reduce((sum, p) => sum + ((p.quantity || 0) * (p.unit_cost || 0)), 0) || 0;
+            stockValue = products?.reduce((sum, p) => {
+                if (!p.quantity || p.quantity <= 0) return sum;
+                return sum + (p.quantity * (p.avg_unit_cost || 0));
+            }, 0) || 0;
         }
 
         document.getElementById('val-products').textContent = totalProducts.toLocaleString();
