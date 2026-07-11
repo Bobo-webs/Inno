@@ -173,22 +173,23 @@ function renderRecentMovements(movements) {
         const typeMap = {
             in: { cls: 'in', icon: 'fa-arrow-down', sign: '+' },
             out: { cls: 'out', icon: 'fa-arrow-up', sign: '-' },
-            adjustment: { cls: 'adj', icon: 'fa-sliders', sign: '~' },
+            adjustment: { cls: 'adj', icon: 'fa-sliders', sign: m.quantity >= 0 ? '+' : '-' },
             receive: { cls: 'in', icon: 'fa-truck-ramp-box', sign: '+' }
         };
         const t = typeMap[m.type] || typeMap['out'];
+        const qtyAbs = Math.abs(m.quantity);
         return `
-            <div class="movement-row">
-                <div class="movement-type ${t.cls}">
-                    <i class="fa-solid ${t.icon}"></i>
-                </div>
-                <div class="movement-info">
-                    <div class="movement-product">${m.products?.name || 'Unknown product'}</div>
-                    <div class="movement-meta">${timeAgo(m.created_at)}</div>
-                </div>
-                <div class="movement-qty ${t.cls}">${t.sign}${m.quantity}</div>
+        <div class="movement-row">
+            <div class="movement-type ${t.cls}">
+                <i class="fa-solid ${t.icon}"></i>
             </div>
-        `;
+            <div class="movement-info">
+                <div class="movement-product">${m.products?.name || 'Unknown product'}</div>
+                <div class="movement-meta">${timeAgo(m.created_at)}</div>
+            </div>
+            <div class="movement-qty ${t.cls}">${t.sign}${qtyAbs}</div>
+        </div>
+    `;
     }).join('');
 }
 
