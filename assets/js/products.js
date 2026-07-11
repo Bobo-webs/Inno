@@ -170,9 +170,6 @@ function renderProductsTable() {
                 <button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="action-btn delete" onclick="openDeleteModal('product','${p.id}','${p.name.replace(/'/g, "\\'")}')" title="Delete">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             </div>` : '';
 
         return `
@@ -237,6 +234,9 @@ window.openProductDrawer = async function (productId = null) {
     catSelect.innerHTML = '<option value="">Select catalogue</option>' +
         allCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
+    const qtyInput = document.getElementById('product-qty');
+    const qtyHint = document.getElementById('product-qty-hint');
+
     if (productId) {
         const product = allProducts.find(p => p.id === productId);
         if (product) {
@@ -248,11 +248,15 @@ window.openProductDrawer = async function (productId = null) {
             document.getElementById('product-qty').value = product.quantity || 0;
             document.getElementById('product-reorder').value = product.reorder_level || 0;
         }
+        qtyInput.disabled = true;
+        if (qtyHint) qtyHint.style.display = 'block';
     } else {
         /* Clear form */
         ['product-name', 'product-sku', 'product-desc', 'product-category',
             'product-unit', 'product-qty', 'product-reorder']
             .forEach(id => { document.getElementById(id).value = ''; });
+        qtyInput.disabled = false;
+        if (qtyHint) qtyHint.style.display = 'none';
     }
 
     document.getElementById('product-drawer-backdrop').classList.add('show');

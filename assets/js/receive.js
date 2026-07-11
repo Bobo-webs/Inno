@@ -210,9 +210,6 @@ function renderHistoryTable() {
                 <button class="action-btn" onclick="editEntry('${m.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="action-btn delete" onclick="openDeleteModal('${m.id}')" title="Reverse">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
             </div>` : '';
 
         return `
@@ -481,54 +478,6 @@ function resetForm() {
     submitBtn.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i><span id="submit-label">Record Receive</span>';
 }
 
-/* ── Delete modal ── */
-window.openDeleteModal = function (movementId) {
-    deleteTargetId = movementId;
-    document.getElementById('delete-modal-backdrop').classList.add('show');
-};
-
-window.closeDeleteModal = function () {
-    document.getElementById('delete-modal-backdrop').classList.remove('show');
-    deleteTargetId = null;
-};
-
-window.confirmDelete = async function () {
-    if (!deleteTargetId) return;
-    const btn = document.getElementById('delete-confirm-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="btn-spinner"></div><span>Reversing...</span>';
-
-    const entry = allHistory.find(m => m.id === deleteTargetId);
-    if (!entry) { closeDeleteModal(); return; }
-
-    const supplierId = allSuppliers.find(s => s.name === entry.suppliers?.name)?.id || null;
-
-    const { error: reverseError } = await db.rpc('reverse_receive_stock', {
-        p_movement_id: deleteTargetId,
-        p_product_id: entry.products?.id,
-        p_quantity: entry.quantity || 0
-    });
-
-    if (reverseError) {
-        showToast('Failed to reverse entry. Try again.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
-        return;
-    }
-
-    await logActivity(
-        'delete', 'receive', deleteTargetId,
-        entry.products?.name || '—',
-        `Reversed: Qty -${entry.quantity} · Supplier: ${entry.suppliers?.name || '—'} · Cost: ${formatCurrency(entry.unit_cost)}`
-    );
-
-    showToast('Entry reversed and removed.', 'success');
-    closeDeleteModal();
-    await Promise.all([loadProducts(), loadHistory()]);
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-trash"></i><span>Reverse Entry</span>';
-};
-
 /* ── Export ── */
 window.exportReceives = function () {
     if (!filteredHistory.length) { showToast('No entries to export.', 'error'); return; }
@@ -556,19 +505,6 @@ window.exportReceives = function () {
     URL.revokeObjectURL(url);
     showToast('History exported.', 'success');
 };
-
-/* ── Close modal on backdrop click ── */
-document.getElementById('delete-modal-backdrop').addEventListener('click', function (e) {
-    if (e.target === this) closeDeleteModal();
-});
-
-/* ── Keyboard ── */
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-        closeReceiveDrawer();
-        closeDeleteModal();
-    }
-});
 
 /* ════ INIT ════ */
 (async function init() {
