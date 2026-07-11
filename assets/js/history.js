@@ -56,7 +56,7 @@ const TYPE_CONFIG = {
         icon: 'fa-minus',
         sign: 'out'
     },
-    purchase_order: {
+    out: {
         label: 'Purchase Order',
         badgeClass: 'badge-po',
         icon: 'fa-file-invoice',
@@ -112,7 +112,7 @@ function updateStats() {
             (m.type === 'adjustment' && m.quantity >= 0))
         .reduce((s, m) => s + Math.abs(m.quantity || 0), 0);
     const unitsOut = allMovements
-        .filter(m => ['purchase_order', 'adjustment_remove'].includes(m.type) ||
+        .filter(m => ['out', 'adjustment_remove'].includes(m.type) ||
             (m.type === 'adjustment' && m.quantity < 0))
         .reduce((s, m) => s + Math.abs(m.quantity || 0), 0);
     const net = unitsIn - unitsOut;
@@ -231,7 +231,7 @@ window.filterHistory = function () {
 /* ── Build reference string ── */
 function buildReference(m) {
     if (m.type === 'receive') return m.suppliers?.name || m.notes || '—';
-    if (m.type === 'purchase_order') return m.reference ? `PO #${m.reference}` : (m.notes || '—');
+    if (m.type === 'out') return m.reference ? `PO #${m.reference}` : (m.notes || '—');
     if (m.type === 'adjustment' || m.type === 'adjustment_add' || m.type === 'adjustment_remove') {
         return m.notes || m.reference || '—';
     }
