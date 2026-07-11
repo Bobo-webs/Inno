@@ -726,7 +726,6 @@ window.closeViewModal = function () {
 };
 
 /* ══════ CONFIRM MODAL ══════ */
-
 window.openConfirm = function (action, poId) {
     confirmAction = action;
     confirmTargetId = poId;
@@ -737,6 +736,7 @@ window.openConfirm = function (action, poId) {
     const titleEl = document.getElementById('confirm-title');
     const bodyEl = document.getElementById('confirm-body');
     const actionBtn = document.getElementById('confirm-action-btn');
+    actionBtn.disabled = false;
     const rejectEl = document.getElementById('reject-reason');
 
     rejectEl.style.display = 'none';
@@ -863,6 +863,9 @@ window.executeConfirmAction = async function () {
     showToast(messages[confirmAction], 'success');
     closeConfirmModal();
     await loadPOs();
+
+    btn.disabled = false;
+    btn.innerHTML = 'Confirm';
 };
 
 /* ── Export ── */
