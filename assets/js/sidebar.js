@@ -10,7 +10,7 @@ const SIDEBAR_NAV = [
                 label: 'Home',
                 icon: 'fa-solid fa-house',
                 href: 'dashboard/home.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant']
+                roles: ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk']
             }
         ]
     },
@@ -22,7 +22,7 @@ const SIDEBAR_NAV = [
                 label: 'Products',
                 icon: 'fa-solid fa-boxes-stacked',
                 href: 'dashboard/inventory/products.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant']
+                roles: ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk']
             }
         ]
     },
@@ -34,7 +34,7 @@ const SIDEBAR_NAV = [
                 label: 'Receive Stock',
                 icon: 'fa-solid fa-truck-ramp-box',
                 href: 'dashboard/stock/receive.html',
-                roles: ['root_admin', 'manager', 'staff']
+                roles: ['root_admin', 'manager', 'staff', 'warehouse_clerk']
             },
             {
                 key: 'adjustments',
@@ -48,7 +48,7 @@ const SIDEBAR_NAV = [
                 label: 'Stock History',
                 icon: 'fa-solid fa-clock-rotate-left',
                 href: 'dashboard/stock/history.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant']
+                roles: ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk']
             }
         ]
     },
@@ -67,7 +67,7 @@ const SIDEBAR_NAV = [
                 label: 'Suppliers',
                 icon: 'fa-solid fa-handshake',
                 href: 'dashboard/suppliers.html',
-                roles: ['root_admin', 'manager']
+                roles: ['root_admin', 'manager', 'warehouse_clerk']
             },
             {
                 key: 'reports',
@@ -105,6 +105,7 @@ const ROLE_LABELS = {
     manager: 'Manager',
     staff: 'Staff',
     accountant: 'Accountant',
+    warehouse_clerk: 'Warehouse Clerk',
     guest: 'Guest'
 };
 

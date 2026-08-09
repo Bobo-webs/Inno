@@ -284,7 +284,10 @@
             const { data, error } = await db.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showToast(error.message || 'Invalid email or password.', 'error');
+                const msg = /email not confirmed/i.test(error.message || '')
+                    ? 'Please verify your email before signing in. Check your inbox for the confirmation link.'
+                    : (error.message || 'Invalid email or password.');
+                showToast(msg, 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
                 return;
@@ -386,7 +389,7 @@
                 return;
             }
 
-            showToast('Account created! An admin will assign your role.', 'success');
+            showToast('Account created! Check your inbox to verify your email before signing in.', 'success');
             btn.disabled = false;
             btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
 
@@ -410,6 +413,10 @@
         (async function () {
             const { data: { session } } = await db.auth.getSession();
             if (!session) return;
+            if (!session.user.email_confirmed_at) {
+                await db.auth.signOut();
+                return;
+            }
             const { data: profile } = await db
                 .from('users').select('role').eq('id', session.user.id).single();
             if (profile && profile.role !== 'guest') {
