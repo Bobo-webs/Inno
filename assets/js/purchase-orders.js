@@ -697,7 +697,7 @@ window.viewPO = function (poId) {
         <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">
             Line Items
         </div>
-        <div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:16px;">
+        <div style="border:1px solid var(--border);border-radius:9px;overflow-x:auto;margin-bottom:16px;">
             <table class="items-table">
                 <thead>
                     <tr>

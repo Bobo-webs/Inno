@@ -3535,6 +3535,7 @@ textarea.form-control {
     width: 100%;
     border-collapse: collapse;
     margin-top: 4px;
+    table-layout: fixed;
 }
 
 .items-table th {
@@ -3554,10 +3555,21 @@ textarea.form-control {
     font-size: 12.5px;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .items-table tr:last-child td {
     border-bottom: none;
+}
+
+@media (max-width: 640px) {
+
+    .items-table th,
+    .items-table td {
+        padding: 8px 6px;
+        font-size: 11.5px;
+    }
 }
 
 /* ── Confirm modal ── */
