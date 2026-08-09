@@ -8,7 +8,8 @@ let currentPage = 1;
 const PAGE_SIZE = 10;
 let deleteTargetId = null;
 let userRole = null;
-let canEdit = false;
+let canCreate = false;
+let canManage = false;
 
 /* ── Helpers ── */
 function getInitials(name) {
@@ -400,7 +401,8 @@ document.addEventListener('keydown', function (e) {
     }
 
     userRole = window.currentUser.role;
-    canEdit = ['root_admin', 'manager'].includes(userRole);
+    canManage = can('suppliers', 'edit', userRole);
+    canCreate = can('suppliers', 'create', userRole);
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);

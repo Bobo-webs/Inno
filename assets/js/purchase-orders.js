@@ -86,7 +86,7 @@ async function loadPOs() {
         `)
         .order('created_at', { ascending: false });
 
-    if (userRole === 'staff') {
+    if (!can('purchase_orders', 'viewAll', userRole)) {
         query = query.eq('created_by', window.currentUser.id);
     }
 
@@ -921,8 +921,8 @@ document.addEventListener('keydown', function (e) {
     }
 
     userRole = window.currentUser.role;
-    canApprove = ['root_admin', 'manager', 'accountant'].includes(userRole);
-    showValue = userRole !== 'staff';
+    canApprove = can('purchase_orders', 'approve', userRole);
+    showValue = can('financial_data', 'view', userRole);
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);

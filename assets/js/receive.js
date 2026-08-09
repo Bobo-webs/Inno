@@ -107,7 +107,7 @@ async function loadHistory() {
         .eq('type', 'receive')
         .order('created_at', { ascending: false });
 
-    if (userRole === 'staff') {
+    if (!can('receive', 'viewAll', userRole)) {
         query = query.eq('created_by', window.currentUser.id);
     }
 
@@ -203,7 +203,7 @@ function renderHistoryTable() {
     tbody.innerHTML = paged.map((m, i) => {
         const totalVal = (m.quantity || 0) * (m.unit_cost || 0);
         const initials = getInitials(m.created_by_username || '');
-        const canAction = userRole !== 'staff' || m.created_by === window.currentUser?.id;
+        const canAction = can('receive', 'viewAll', userRole) || m.created_by === window.currentUser?.id;
 
         const actions = canAction ? `
             <div class="action-btns">

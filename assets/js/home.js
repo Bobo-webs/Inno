@@ -48,9 +48,9 @@ function populateUserUI() {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
-    /* Restrict stock value card for staff */
+    /* Restrict stock value card for roles without financial visibility */
     const role = user.role;
-    if (role === 'staff') {
+    if (!can('financial_data', 'view', role)) {
         const card = document.getElementById('card-value');
         card.style.display = 'block';
         card.classList.add('stat-card--restricted');
@@ -66,27 +66,19 @@ async function loadDashboard() {
         const user = window.currentUser;
 
         /* ── 1. Products stats ── */
-        const role = window.currentUser.role;
-        const selectFields = (role === 'staff')
-            ? 'id, quantity, reorder_level, is_active'
-            : 'id, quantity, reorder_level, is_active, avg_unit_cost';
-
         const { data: products } = await db
-            .from('products')
-            .select(selectFields)
+            .from('products_home_view')
+            .select('id, quantity, reorder_level, is_active, avg_unit_cost')
             .eq('is_active', true);
 
         const totalProducts = products?.length || 0;
         const lowStock = products?.filter(p => p.quantity > 0 && p.quantity <= p.reorder_level).length || 0;
         const outOfStock = products?.filter(p => p.quantity <= 0).length || 0;
 
-        let stockValue = 0;
-        if (user.role !== 'staff') {
-            stockValue = products?.reduce((sum, p) => {
-                if (!p.quantity || p.quantity <= 0) return sum;
-                return sum + (p.quantity * (p.avg_unit_cost || 0));
-            }, 0) || 0;
-        }
+        const stockValue = products?.reduce((sum, p) => {
+            if (!p.quantity || p.quantity <= 0 || p.avg_unit_cost === null) return sum;
+            return sum + (p.quantity * p.avg_unit_cost);
+        }, 0) || 0;
 
         document.getElementById('val-products').textContent = totalProducts.toLocaleString();
         document.getElementById('val-low-stock').textContent = lowStock.toLocaleString();

@@ -617,9 +617,9 @@ document.addEventListener('keydown', function (e) {
     }
 
     userRole = window.currentUser.role;
-    canEditProducts = ['root_admin', 'manager', 'accountant', 'warehouse_clerk'].includes(userRole);
-    canManageCategories = ['root_admin', 'manager', 'accountant', 'warehouse_clerk'].includes(userRole);
-    canCreateCategories = canManageCategories;
+    canEditProducts = can('products', 'edit', userRole);
+    canManageCategories = can('categories', 'edit', userRole);
+    canCreateCategories = can('categories', 'create', userRole);
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
