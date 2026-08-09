@@ -126,26 +126,17 @@ function _initials(fullName) {
 }
 
 
-function _buildNavItem(item, activePage, userRole) {
+function _buildNavItem(item, activePage) {
     const isActive = item.key === activePage;
-    const hasAccess = item.roles.includes(userRole);
-    const href = hasAccess ? _resolveHref(item.href) : '#';
-
+    const href = _resolveHref(item.href);
     const activeClass = isActive ? ' sidebar-nav-item--active' : '';
-    const lockedClass = !hasAccess ? ' sidebar-nav-item--locked' : '';
-    const clickHandler = !hasAccess ? ' onclick="return false;"' : '';
-    const ariaLabel = !hasAccess ? ` aria-label="${item.label} — access restricted"` : '';
 
     return `
-        <a href="${href}"
-           class="sidebar-nav-item${activeClass}${lockedClass}"
-           ${clickHandler}
-           ${ariaLabel}>
+        <a href="${href}" class="sidebar-nav-item${activeClass}">
             <span class="sidebar-nav-icon">
                 <i class="${item.icon}" aria-hidden="true"></i>
             </span>
             <span class="sidebar-nav-label">${item.label}</span>
-            ${!hasAccess ? '<span class="sidebar-nav-lock"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>' : ''}
         </a>
     `;
 }
@@ -384,12 +375,14 @@ window.renderSidebar = function (activePage, userRole) {
     /* ── Nav HTML ── */
     let navHTML = '';
     SIDEBAR_NAV.forEach(group => {
+        const visibleItems = group.items.filter(item => item.roles.includes(userRole));
+        if (!visibleItems.length) return;
+
         navHTML += `<div class="sidebar-section-label">${group.section}</div>`;
-        group.items.forEach(item => {
-            navHTML += _buildNavItem(item, activePage, userRole);
+        visibleItems.forEach(item => {
+            navHTML += _buildNavItem(item, activePage);
         });
     });
-
     /* ── Full sidebar HTML ── */
     const user = window.currentUser || {};
     const initials = _initials(user.full_name || user.username || '');
