@@ -34,6 +34,13 @@ const ROLES = [
         color: '#0d9488', bg: '#f0fdfa'
     },
     {
+        key: 'warehouse_clerk',
+        label: 'Warehouse Clerk',
+        desc: 'Receive stock, manage products/catalogues, view & add suppliers — own records only',
+        icon: 'fa-solid fa-warehouse',
+        color: '#d97706', bg: '#fffbeb'
+    },
+    {
         key: 'staff',
         label: 'Staff',
         desc: 'Create POs and receive stock — own records only',

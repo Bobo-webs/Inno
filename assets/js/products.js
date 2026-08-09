@@ -10,7 +10,9 @@ let currentPage = 1;
 const PAGE_SIZE = 10;
 let deleteTarget = { type: null, id: null, name: null };
 let userRole = null;
-let canEdit = false;
+let canEditProducts = false;
+let canCreateCategories = false;
+let canManageCategories = false;
 
 /* ── Helpers ── */
 function getInitials(name) {
@@ -71,14 +73,15 @@ window.switchTab = function (tab) {
 /* ── Header actions (Add buttons) ── */
 function updateHeaderActions() {
     const el = document.getElementById('header-actions');
-    if (!canEdit) { el.innerHTML = ''; return; }
 
     if (currentTab === 'products') {
+        if (!canEditProducts) { el.innerHTML = ''; return; }
         el.innerHTML = `
             <button class="btn btn-primary" onclick="openProductDrawer()">
                 <i class="fa-solid fa-plus"></i> Add Product
             </button>`;
     } else {
+        if (!canCreateCategories) { el.innerHTML = ''; return; }
         el.innerHTML = `
             <button class="btn btn-primary" onclick="openCatModal()">
                 <i class="fa-solid fa-plus"></i> Add Catalogue
@@ -150,7 +153,7 @@ function renderProductsTable() {
                     <div class="empty-state-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
                     <h3>No products found</h3>
                     <p>Try adjusting your search or filters</p>
-                    ${canEdit ? '<button class="btn btn-primary" onclick="openProductDrawer()"><i class="fa-solid fa-plus"></i> Add Product</button>' : ''}
+                    ${canEditProducts ? '<button class="btn btn-primary" onclick="openProductDrawer()"><i class="fa-solid fa-plus"></i> Add Product</button>' : ''}
                 </div>
             </td></tr>`;
         footer.style.display = 'none';
@@ -165,7 +168,7 @@ function renderProductsTable() {
     tbody.innerHTML = paged.map((p, i) => {
         const initials = (p.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
         const catName = p.categories?.name || '—';
-        const actions = canEdit ? `
+        const actions = canEditProducts ? `
             <div class="action-btns">
                 <button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
@@ -399,7 +402,7 @@ function renderCategoriesTable() {
                     <div class="empty-state-icon"><i class="fa-solid fa-tag"></i></div>
                     <h3>No categories found</h3>
                     <p>Create categories to organise your products</p>
-                    ${canEdit ? '<button class="btn btn-primary" onclick="openCatModal()"><i class="fa-solid fa-plus"></i> Add Catalogue</button>' : ''}
+                    ${canCreateCategories ? '<button class="btn btn-primary" onclick="openCatModal()"><i class="fa-solid fa-plus"></i> Add Catalogue</button>' : ''}
                 </div>
             </td></tr>`;
         footer.style.display = 'none';
@@ -408,7 +411,7 @@ function renderCategoriesTable() {
 
     tbody.innerHTML = filteredCategories.map((c, i) => {
         const productCount = allProducts.filter(p => p.category_id === c.id).length;
-        const actions = canEdit ? `
+        const actions = canManageCategories ? `
             <div class="action-btns">
                 <button class="action-btn" onclick="openCatModal('${c.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
@@ -614,7 +617,9 @@ document.addEventListener('keydown', function (e) {
     }
 
     userRole = window.currentUser.role;
-    canEdit = ['root_admin', 'manager', 'accountant'].includes(userRole);
+    canEditProducts = ['root_admin', 'manager', 'accountant', 'warehouse_clerk'].includes(userRole);
+    canManageCategories = ['root_admin', 'manager', 'accountant', 'warehouse_clerk'].includes(userRole);
+    canCreateCategories = canManageCategories;
 
     /* Topbar */
     const initials = getInitials(window.currentUser.full_name || window.currentUser.username);
@@ -628,10 +633,11 @@ document.addEventListener('keydown', function (e) {
     renderSidebar('products', userRole);
 
     /* Role UI adjustments */
-    if (!canEdit) {
+    if (!canEditProducts) {
         document.getElementById('products-readonly-notice').style.display = 'flex';
-        document.getElementById('categories-readonly-notice').style.display = 'flex';
         document.getElementById('products-actions-col').style.display = 'none';
+    }
+    if (!canManageCategories) {
         document.getElementById('categories-actions-col').style.display = 'none';
     }
 
