@@ -50,7 +50,7 @@ window.toggleTheme = function () {
 async function loadMeta() {
     const [{ data: cats }, { data: prods }] = await Promise.all([
         db.from('categories').select('id, name').order('name'),
-        db.from('products').select('id, name, sku, quantity, reorder_level, unit_cost, is_active, category_id, categories(name)').eq('is_active', true).order('name')
+        db.from('products').select('id, name, sku, quantity, reorder_level, avg_unit_cost, is_active, category_id, categories(name)').eq('is_active', true).order('name')
     ]);
 
     allCategories = cats || [];
@@ -328,7 +328,7 @@ async function genValuation() {
     let grandTotal = 0;
 
     Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([catName, items]) => {
-        const catTotal = items.reduce((s, p) => s + (p.quantity * (p.unit_cost || 0)), 0);
+        const catTotal = items.reduce((s, p) => s + (p.quantity * (p.avg_unit_cost || 0)), 0);
         grandTotal += catTotal;
 
         rows += `<tr>
@@ -338,13 +338,13 @@ async function genValuation() {
         </tr>`;
 
         items.forEach(p => {
-            const val = p.quantity * (p.unit_cost || 0);
+            const val = p.quantity * (p.avg_unit_cost || 0);
             rows += `<tr>
                 <td style="font-weight:600;padding-left:28px;">${p.name}</td>
                 <td style="color:var(--text-muted);font-size:12px;">${p.sku || '—'}</td>
                 <td style="color:var(--text-muted);">${catName}</td>
                 <td style="font-weight:700;">${p.quantity.toLocaleString()}</td>
-                <td>${formatCurrency(p.unit_cost || 0)}</td>
+                <td>${formatCurrency(p.avg_unit_cost || 0)}</td>
                 <td style="font-weight:700;">${formatCurrency(val)}</td>
             </tr>`;
         });
@@ -488,8 +488,8 @@ window.exportReport = function (format) {
         case 'valuation':
             exportRows = currentData.map(p => [
                 p.name, p.sku || '', p.categories?.name || '',
-                p.quantity, p.unit_cost || 0,
-                (p.quantity * (p.unit_cost || 0)).toFixed(2)
+                p.quantity, p.avg_unit_cost || 0,
+                (p.quantity * (p.avg_unit_cost || 0)).toFixed(2)
             ]); break;
 
         case 'lowstock':

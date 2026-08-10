@@ -21,6 +21,9 @@ const PERMISSIONS = {
         create: ['root_admin', 'manager', 'staff', 'warehouse_clerk'],
         viewAll: ['root_admin', 'manager', 'accountant']
     },
+    history: {
+        viewAll: ['root_admin', 'manager', 'accountant']
+    },
     purchase_orders: {
         create: ['root_admin', 'manager', 'accountant', 'staff'],
         approve: ['root_admin', 'manager', 'accountant'],

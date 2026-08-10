@@ -198,7 +198,7 @@ function renderUsersTable() {
     tbody.innerHTML = paged.map((u, i) => {
         const initials = getInitials(u.full_name || u.username);
         const isOwnAcct = u.id === window.currentUser.id;
-        const roleCfg = ROLES.find(r => r.key === u.role) || ROLES[4];
+        const roleCfg = ROLES.find(r => r.key === u.role) || ROLES.find(r => r.key === 'guest');
 
         const statusBadge = u.is_active
             ? '<span class="badge badge-success"><span class="badge-dot"></span>Active</span>'

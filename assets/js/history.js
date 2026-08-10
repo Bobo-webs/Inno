@@ -91,7 +91,7 @@ async function loadMovements() {
         `)
         .order('created_at', { ascending: false });
 
-    if (userRole === 'staff') {
+    if (!can('history', 'viewAll', userRole)) {
         query = query.eq('created_by', window.currentUser.id);
     }
 
