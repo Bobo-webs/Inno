@@ -4002,6 +4002,7 @@ textarea.form-control {
     font-weight: 600;
     padding: 3px 9px;
     border-radius: 20px;
+    text-align: center;
 }
 
 .role-root_admin {
@@ -4022,6 +4023,11 @@ textarea.form-control {
 .role-staff {
     background: var(--success-soft);
     color: var(--success);
+}
+
+.role-warehouse_clerk {
+    background:#fffbeb;
+    color:#d97706;
 }
 
 .role-guest {
@@ -4084,13 +4090,13 @@ textarea.form-control {
 }
 
 .action-view {
-    background: #f0f07f;
-    color: rgb(34, 34, 6);
+    background: #b3b369;
+    color: #222206;
 }
 
 .action-export {
-    background: #f98b8b;
-    color: #2b0b0b;
+    background: #f28bf9;
+    color: #2b112d;
 }
 
 .entity-chip {
