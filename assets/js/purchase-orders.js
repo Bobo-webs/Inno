@@ -137,7 +137,10 @@ window.filterPOs = function () {
     filteredPOs = allPOs.filter(po => {
         const matchSearch = !search ||
             (po.po_number || '').toLowerCase().includes(search) ||
-            (po.client_name || '').toLowerCase().includes(search);
+            (po.client_name || '').toLowerCase().includes(search) ||
+            (po.purchase_order_items || []).some(item =>
+                (item.products?.sku || '').toLowerCase().includes(search)
+            );
         const matchStatus = !status || po.status === status;
         const entryDate = new Date(po.created_at);
         const matchDate = !date ||
@@ -715,7 +718,7 @@ window.viewPO = function (poId) {
                 <thead>
                     <tr>
                         <th>Product</th>
-                        <th>SKU</th>
+                        <th>Item Number</th>
                         <th>Qty</th>
                         <th>Unit Price</th>
                         <th>Total</th>
