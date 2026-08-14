@@ -91,6 +91,15 @@ window.generateReport = async function (key) {
     currentData = [];
     currentCols = [];
 
+    const reportLabels = {
+        stock: 'Stock Report',
+        movement: 'Stock Movement Report',
+        po: 'Purchase Order Report',
+        supplier: 'Supplier Report',
+        valuation: 'Inventory Valuation Report',
+        lowstock: 'Low Stock Report'
+    };
+
     try {
         switch (key) {
             case 'stock': await genStock(); break;
@@ -100,6 +109,7 @@ window.generateReport = async function (key) {
             case 'valuation': await genValuation(); break;
             case 'lowstock': await genLowStock(); break;
         }
+        await logActivity('view', 'report', null, reportLabels[key], `${currentData.length} record(s) returned`);
     } catch (err) {
         showToast('Failed to generate report. Try again.', 'error');
         console.error(err);
@@ -439,7 +449,7 @@ function showPreview(title, meta, cols, rows, isEmpty = false, emptyHTML = null)
 }
 
 /* ── Export ── */
-window.exportReport = function (format) {
+window.exportReport = async function (format) {
     if (!currentData.length) { showToast('Generate a report first.', 'error'); return; }
 
     const reportNames = {
@@ -508,6 +518,9 @@ window.exportReport = function (format) {
     a.download = `${filename}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+
+    await logActivity('export', 'report', null, reportNames[currentReport], `${currentData.length} row(s) exported as CSV`);
+
     showToast('Report exported successfully.', 'success');
 };
 

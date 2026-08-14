@@ -65,7 +65,9 @@ const ACTION_TYPES = {
     reject: { label: 'Rejected', class: 'action-reject', icon: 'fa-xmark' },
     receive: { label: 'Received Stock', class: 'action-receive', icon: 'fa-truck-ramp-box' },
     adjust: { label: 'Adjusted', class: 'action-adjust', icon: 'fa-sliders' },
-    auth: { label: 'Auth', class: 'action-auth', icon: 'fa-key' }
+    auth: { label: 'Auth', class: 'action-auth', icon: 'fa-key' },
+    view: { label: 'Viewed', class: 'action-view', icon: 'fa-eye' },
+    export: { label: 'Exported', class: 'action-export', icon: 'fa-file-export' },
 };
 
 /* ── Helpers ── */

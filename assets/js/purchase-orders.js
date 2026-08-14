@@ -613,6 +613,15 @@ window.savePO = async function (status) {
                 : 'PO submitted for approval.',
             'success'
         );
+
+        const poTotal = lineItems.reduce((s, i) => s + (i.quantity * i.unit_cost), 0);
+        await logActivity(
+            editId ? 'edit' : 'create',
+            'purchase_order',
+            poId,
+            poNumber,
+            `Client: ${clientName} · Items: ${lineItems.length} · Status: ${status} · Total: ${formatCurrency(poTotal)}`
+        );
     }
 
     closeDrawer();
@@ -631,6 +640,10 @@ window.submitPO = async function (poId) {
         .eq('id', poId);
 
     if (error) { showToast('Failed to submit PO.', 'error'); return; }
+
+    const po = allPOs.find(p => p.id === poId);
+    await logActivity('edit', 'purchase_order', poId, po?.po_number, 'Status: draft → submitted');
+
     showToast('PO submitted for approval.', 'success');
     await loadPOs();
 };
@@ -859,6 +872,16 @@ window.executeConfirmAction = async function () {
         cancel: 'PO cancelled and stock restored.',
         delete: 'PO deleted.'
     };
+
+    const po = allPOs.find(p => p.id === confirmTargetId);
+    const logActionMap = { approve: 'approve', reject: 'reject', cancel: 'edit', delete: 'delete' };
+    const logDetails = {
+        approve: 'Stock deducted for all line items',
+        reject: `Reason: ${document.getElementById('reject-reason').value.trim() || '—'}`,
+        cancel: 'Status: approved → cancelled · Stock restored',
+        delete: 'Purchase order permanently deleted'
+    };
+    await logActivity(logActionMap[confirmAction], 'purchase_order', confirmTargetId, po?.po_number, logDetails[confirmAction]);
 
     showToast(messages[confirmAction], 'success');
     closeConfirmModal();

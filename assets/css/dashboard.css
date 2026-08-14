@@ -4083,6 +4083,16 @@ textarea.form-control {
     border: 1px solid var(--border);
 }
 
+.action-view {
+    background: #f0f07f;
+    color: rgb(34, 34, 6);
+}
+
+.action-export {
+    background: #f98b8b;
+    color: #2b0b0b;
+}
+
 .entity-chip {
     font-size: 11.5px;
     font-weight: 500;

@@ -112,7 +112,7 @@ function renderTable() {
                     <div class="empty-state-icon"><i class="fa-solid fa-handshake"></i></div>
                     <h3>No suppliers found</h3>
                     <p>Add suppliers so they appear on the Receive Stock page</p>
-                    ${canEdit ? '<button class="btn btn-primary btn-sm" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Add Supplier</button>' : ''}
+                    ${canCreate ? '<button class="btn btn-primary btn-sm" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Add Supplier</button>' : ''}
                 </div>
             </td></tr>`;
         footer.style.display = 'none';
@@ -131,7 +131,7 @@ function renderTable() {
             ? '<span class="badge badge-success"><span class="badge-dot"></span>Active</span>'
             : '<span class="badge badge-neutral">Inactive</span>';
 
-        const actions = canEdit ? `
+        const actions = canManage ? `
             <div class="action-btns">
                 <button class="action-btn" onclick="openDrawer('${s.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
@@ -291,6 +291,23 @@ window.saveSupplier = async function () {
     }
 
     showToast(id ? 'Supplier updated.' : 'Supplier added.', 'success');
+
+    if (id) {
+        const original = allSuppliers.find(s => s.id === id);
+        const changes = [];
+        if (original.name !== name) changes.push(`Name: "${original.name}" → "${name}"`);
+        if ((original.contact_person || '') !== contact) changes.push(`Contact: "${original.contact_person || '—'}" → "${contact || '—'}"`);
+        if ((original.phone || '') !== phone) changes.push(`Phone: "${original.phone || '—'}" → "${phone || '—'}"`);
+        if ((original.email || '') !== email) changes.push(`Email: "${original.email || '—'}" → "${email || '—'}"`);
+        if ((original.payment_terms || '') !== terms) changes.push(`Terms: "${original.payment_terms || '—'}" → "${terms || '—'}"`);
+        if (original.is_active !== active) changes.push(`Active: ${original.is_active} → ${active}`);
+        await logActivity('edit', 'supplier', id, name, changes.length ? changes.join(' · ') : 'No changes detected');
+    } else {
+        await logActivity('create', 'supplier', null, name,
+            `Contact: ${contact || '—'} · Phone: ${phone || '—'} · Email: ${email || '—'}`
+        );
+    }
+
     closeDrawer();
     await loadSuppliers();
     btn.disabled = false;
@@ -308,6 +325,11 @@ window.toggleActive = async function (id, newState) {
         .eq('id', id);
 
     if (error) { showToast(`Failed to ${action.toLowerCase()} supplier.`, 'error'); return; }
+
+    await logActivity('edit', 'supplier', id, supplier?.name,
+        `Active: ${!newState} → ${newState}`
+    );
+
     showToast(`${supplier?.name} ${newState ? 'reactivated' : 'deactivated'}.`, 'success');
     await loadSuppliers();
 };
@@ -349,6 +371,9 @@ window.confirmDelete = async function () {
         btn.innerHTML = '<i class="fa-solid fa-trash"></i> Delete';
         return;
     }
+
+    const deletedSupplier = allSuppliers.find(s => s.id === deleteTargetId);
+    await logActivity('delete', 'supplier', deleteTargetId, deletedSupplier?.name, 'Supplier permanently deleted');
 
     showToast('Supplier deleted.', 'success');
     closeDeleteModal();
@@ -409,8 +434,8 @@ document.addEventListener('keydown', function (e) {
     document.getElementById('topbar-avatar').textContent = initials;
     document.getElementById('topbar-username').textContent = '' + window.currentUser.username;
 
-    /* Hide add button for accountant */
-    if (!canEdit) document.getElementById('add-supplier-btn').style.display = 'none';
+    /* Hide add button if user cannot create suppliers */
+    if (!canCreate) document.getElementById('add-supplier-btn').style.display = 'none';
 
     applyTheme(localStorage.getItem('inno-theme') || 'light');
     renderSidebar('suppliers', userRole);
