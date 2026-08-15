@@ -93,7 +93,7 @@ function updateHeaderActions() {
 
 /* ── Fetch products ── */
 async function loadProducts() {
-    const selectFields = 'id, name, sku, description, quantity, reorder_level, is_active, category_id, unit, categories(name)';
+    const selectFields = 'id, name, sku, description, quantity, reorder_level, is_active, category_id, unit, created_by, created_at, categories(name)';
 
     const { data, error } = await db
         .from('products')
@@ -168,6 +168,9 @@ function renderProductsTable() {
     tbody.innerHTML = paged.map((p, i) => {
         const initials = (p.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
         const catName = p.categories?.name || '—';
+        const isNew = window.pageLastSeen && p.created_by !== window.currentUser.id &&
+            new Date(p.created_at) > new Date(window.pageLastSeen);
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
         const actions = canEditProducts ? `
             <div class="action-btns">
                 <button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
@@ -178,6 +181,7 @@ function renderProductsTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div class="product-name-cell">
                         <div class="product-avatar">${initials}</div>
                         <div>
@@ -642,6 +646,7 @@ document.addEventListener('keydown', function (e) {
     }
 
     /* Load data */
+    window.pageLastSeen = await getAndMarkPageSeen('products');
     await loadCategories();
     await loadProducts();
     filterCategories();

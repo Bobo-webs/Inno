@@ -19,10 +19,10 @@ const PERMISSIONS = {
     },
     receive: {
         create: ['root_admin', 'manager', 'staff', 'warehouse_clerk'],
-        viewAll: ['root_admin', 'manager', 'accountant']
+        viewAll: ['root_admin', 'manager', 'accountant', 'warehouse_clerk']
     },
     history: {
-        viewAll: ['root_admin', 'manager', 'accountant']
+        viewAll: ['root_admin', 'manager', 'accountant', 'warehouse_clerk']
     },
     purchase_orders: {
         create: ['root_admin', 'manager', 'accountant', 'staff'],

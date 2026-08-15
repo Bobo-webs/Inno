@@ -126,10 +126,13 @@ function _initials(fullName) {
 }
 
 
-function _buildNavItem(item, activePage) {
+function _buildNavItem(item, activePage, count = 0) {
     const isActive = item.key === activePage;
     const href = _resolveHref(item.href);
     const activeClass = isActive ? ' sidebar-nav-item--active' : '';
+    const badge = count > 0
+        ? `<span class="sidebar-nav-badge">${count > 99 ? '99+' : count}</span>`
+        : '';
 
     return `
         <a href="${href}" class="sidebar-nav-item${activeClass}">
@@ -137,12 +140,30 @@ function _buildNavItem(item, activePage) {
                 <i class="${item.icon}" aria-hidden="true"></i>
             </span>
             <span class="sidebar-nav-label">${item.label}</span>
+            ${badge}
         </a>
     `;
 }
 
+window.getAndMarkPageSeen = async function (pageKey) {
+    let oldSeen = null;
+    try {
+        const { data } = await db
+            .from('page_last_seen')
+            .select('last_seen_at')
+            .eq('user_id', window.currentUser.id)
+            .eq('page_key', pageKey)
+            .maybeSingle();
+        oldSeen = data?.last_seen_at || null;
+    } catch (_) { }
 
-window.renderSidebar = function (activePage, userRole) {
+    try { await db.rpc('mark_page_seen', { p_page_key: pageKey }); } catch (_) { }
+
+    return oldSeen;
+};
+
+
+window.renderSidebar = async function (activePage, userRole) {
 
     /* ── Inject sidebar CSS ── */
     if (!document.getElementById('sidebar-styles')) {
@@ -267,6 +288,21 @@ window.renderSidebar = function (activePage, userRole) {
             /* ── Nav label ── */
             .sidebar-nav-label { flex: 1; }
 
+            .sidebar-nav-badge {
+                background: #ef4444;
+                color: white;
+                font-size: 10px;
+                font-weight: 700;
+                min-width: 18px;
+                height: 18px;
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 5px;
+                flex-shrink: 0;
+            }
+
             /* ── Lock icon ── */
             .sidebar-nav-lock {
                 font-size: 10px;
@@ -372,6 +408,13 @@ window.renderSidebar = function (activePage, userRole) {
         document.head.appendChild(style);
     }
 
+    /* ── Fetch notification counts ── */
+    let counts = {};
+    try {
+        const { data } = await db.rpc('get_notification_counts');
+        (data || []).forEach(row => { counts[row.out_page_key] = row.out_count; });
+    } catch (_) { }
+
     /* ── Nav HTML ── */
     let navHTML = '';
     SIDEBAR_NAV.forEach(group => {
@@ -380,7 +423,7 @@ window.renderSidebar = function (activePage, userRole) {
 
         navHTML += `<div class="sidebar-section-label">${group.section}</div>`;
         visibleItems.forEach(item => {
-            navHTML += _buildNavItem(item, activePage);
+            navHTML += _buildNavItem(item, activePage, counts[item.key] || 0);
         });
     });
     /* ── Full sidebar HTML ── */
@@ -437,6 +480,7 @@ window.renderSidebar = function (activePage, userRole) {
         return;
     }
     container.innerHTML = sidebarHTML;
+
 };
 
 

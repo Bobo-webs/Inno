@@ -42,7 +42,7 @@ window.toggleTheme = function () {
 async function loadSuppliers() {
     const { data, error } = await db
         .from('suppliers')
-        .select('id, name, contact_person, phone, email, address, payment_terms, notes, is_active, created_at')
+        .select('id, name, contact_person, phone, email, address, payment_terms, notes, is_active, created_at, created_by')
         .order('name', { ascending: true });
 
     if (error) { showToast('Failed to load suppliers.', 'error'); return; }
@@ -127,6 +127,9 @@ function renderTable() {
     tbody.innerHTML = paged.map((s, i) => {
         const initials = getInitials(s.name);
         const receiveCount = receiveCountMap[s.id] || 0;
+        const isNew = window.pageLastSeen && s.created_by !== window.currentUser.id &&
+            new Date(s.created_at) > new Date(window.pageLastSeen);
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
         const statusBadge = s.is_active
             ? '<span class="badge badge-success"><span class="badge-dot"></span>Active</span>'
             : '<span class="badge badge-neutral">Inactive</span>';
@@ -150,6 +153,7 @@ function renderTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div class="supplier-avatar">${initials}</div>
                         <div>
@@ -439,5 +443,6 @@ document.addEventListener('keydown', function (e) {
 
     applyTheme(localStorage.getItem('inno-theme') || 'light');
     renderSidebar('suppliers', userRole);
+    window.pageLastSeen = await getAndMarkPageSeen('suppliers');
     await loadSuppliers();
 })();

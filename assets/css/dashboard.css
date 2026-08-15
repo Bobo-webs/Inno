@@ -4026,8 +4026,8 @@ textarea.form-control {
 }
 
 .role-warehouse_clerk {
-    background:#fffbeb;
-    color:#d97706;
+    background: #fffbeb;
+    color: #d97706;
 }
 
 .role-guest {
@@ -4519,4 +4519,18 @@ textarea.form-control {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+
+.row-new-badge {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+    margin-right: 6px;
+    vertical-align: middle;
 }
