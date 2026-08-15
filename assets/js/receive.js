@@ -204,6 +204,9 @@ function renderHistoryTable() {
         const totalVal = (m.quantity || 0) * (m.unit_cost || 0);
         const initials = getInitials(m.created_by_username || '');
         const canAction = can('receive', 'viewAll', userRole) || m.created_by === window.currentUser?.id;
+        const isNew = window.pageLastSeen && m.created_by !== window.currentUser?.id &&
+            new Date(m.created_at) > new Date(window.pageLastSeen);
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
 
         const actions = canAction ? `
             <div class="action-btns">
@@ -215,6 +218,7 @@ function renderHistoryTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div class="product-name-cell">
                         <div class="product-avatar">${(m.products?.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}</div>
                         <div>
@@ -536,6 +540,7 @@ window.exportReceives = function () {
     renderSidebar('receive', userRole);
 
     /* Load data */
+    window.pageLastSeen = await getAndMarkPageSeen('receive');
     await Promise.all([loadProducts(), loadSuppliers(), loadHistory()]);
 
     /* Reveal page */

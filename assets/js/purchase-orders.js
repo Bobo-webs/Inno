@@ -184,6 +184,12 @@ function renderTable() {
         const itemCount = (po.purchase_order_items || []).length;
         const poTotal = (po.purchase_order_items || []).reduce((s, item) => s + (item.quantity * item.unit_cost), 0);
         const createdInit = getInitials(po.created_by_username || '');
+        const isOwn = po.created_by === window.currentUser?.id;
+        const isNew = window.pageLastSeen && (
+            (!isOwn && new Date(po.created_at) > new Date(window.pageLastSeen)) ||
+            (isOwn && po.approved_at && new Date(po.approved_at) > new Date(window.pageLastSeen))
+        );
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
         const approvedInit = getInitials(po.approved_by_username || '');
 
         const createdSig = `
@@ -205,6 +211,7 @@ function renderTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div style="font-weight:700;font-size:13px;color:var(--primary);">${po.po_number}</div>
                 </td>
                 <td>
@@ -966,5 +973,6 @@ document.addEventListener('keydown', function (e) {
     applyTheme(localStorage.getItem('inno-theme') || 'light');
 
     renderSidebar('purchase-orders', userRole);
+    window.pageLastSeen = await getAndMarkPageSeen('purchase-orders');
     await Promise.all([loadProducts(), loadPOs()]);
 })();

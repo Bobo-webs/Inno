@@ -84,7 +84,7 @@ async function loadAdjustments() {
     const { data, error } = await db
         .from('stock_movements')
         .select(`
-            id, quantity, reason, notes, created_at, created_by_username,
+            id, quantity, reason, notes, created_at, created_by, created_by_username,
             adj_type:notes,
             products(id, name, sku)
         `)
@@ -181,6 +181,9 @@ function renderTable() {
         const isAdd = a.quantity > 0;
         const absQty = Math.abs(a.quantity);
         const initials = getInitials(a.created_by_username || '');
+        const isNew = window.pageLastSeen && a.created_by !== window.currentUser?.id &&
+            new Date(a.created_at) > new Date(window.pageLastSeen);
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
         const typeBadge = isAdd
             ? `<span class="badge badge-add">Added</span>`
             : `<span class="badge badge-remove">Removed</span>`;
@@ -191,6 +194,7 @@ function renderTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div style="font-weight:600;">${a.products?.name || '—'}</div>
                     <div style="font-size:11px;color:var(--text-muted);">${a.products?.sku || 'No Item Number'}</div>
                 </td>
@@ -619,5 +623,6 @@ document.addEventListener('keydown', function (e) {
     document.getElementById('f-date').value = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
     /* Load */
+    window.pageLastSeen = await getAndMarkPageSeen('adjustments');
     await Promise.all([loadProducts(), loadAdjustments()]);
 })();

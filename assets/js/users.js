@@ -201,6 +201,9 @@ function renderUsersTable() {
         const initials = getInitials(u.full_name || u.username);
         const isOwnAcct = u.id === window.currentUser.id;
         const roleCfg = ROLES.find(r => r.key === u.role) || ROLES.find(r => r.key === 'guest');
+        const isNew = window.pageLastSeen && !isOwnAcct &&
+            new Date(u.created_at) > new Date(window.pageLastSeen);
+        const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
 
         const statusBadge = u.is_active
             ? '<span class="badge badge-success"><span class="badge-dot"></span>Active</span>'
@@ -215,6 +218,7 @@ function renderUsersTable() {
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
+                    ${newBadge}
                     <div class="user-cell">
                         <div class="user-avatar">${initials}</div>
                         <div>
@@ -571,6 +575,7 @@ document.addEventListener('keydown', function (e) {
     renderSidebar('users', window.currentUser.role);
 
     /* Load both in parallel */
+    window.pageLastSeen = await getAndMarkPageSeen('users');
     await Promise.all([loadUsers(), loadActivity()]);
 
     /* Restore saved tab + page after data loads */
