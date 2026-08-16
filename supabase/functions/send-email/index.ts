@@ -1,46 +1,46 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const FROM_ADDRESS = "Inno-Chike <admin@inno-chike.com.ng>";
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "@supabase/server";
+Deno.serve(async (req) => {
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
 
-console.log("Hello from Functions!");
+  try {
+    const { to, subject, html } = await req.json();
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
-export default {
-  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
-
-      return Response.json({
-        email: data?.user?.email,
-      });
+    if (!to || !subject || !html) {
+      return new Response(JSON.stringify({ error: "Missing to, subject, or html" }), { status: 400 });
     }
-    */
 
-    const { name } = await req.json();
+    const recipients = Array.isArray(to) ? to : [to];
+    if (recipients.length === 0) {
+      return new Response(JSON.stringify({ skipped: true, reason: "no recipients" }), { status: 200 });
+    }
 
-    return Response.json({
-      message: `Hello ${name}!`,
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: FROM_ADDRESS,
+        to: recipients,
+        subject,
+        html
+      })
     });
-  }),
-};
 
-/* To invoke locally:
+    const data = await res.json();
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+    if (!res.ok) {
+      return new Response(JSON.stringify({ error: data }), { status: 502 });
+    }
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
-    --header 'apiKey: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' \
-    --data '{"name":"Functions"}'
+    return new Response(JSON.stringify({ success: true, id: data.id }), { status: 200 });
 
-*/
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+  }
+});
