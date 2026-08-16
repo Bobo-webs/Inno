@@ -23,6 +23,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./assets/js/toast.js"></script>
     <script src="./assets/js/supabase.js"></script>
+
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
 </head>
 
 <body>
@@ -104,7 +107,9 @@
                 <div class="auth-tabs" role="tablist">
                     <button class="auth-tab active" id="tab-signin" role="tab" onclick="switchTab('signin')">Sign
                         In</button>
+
                     <button class="auth-tab" id="tab-signup" role="tab" onclick="switchTab('signup')">Sign Up</button>
+
                     <div class="tab-slider" id="tab-slider"></div>
                 </div>
 
@@ -119,8 +124,10 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signin-email">Email Address</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-envelope input-icon"></i>
+
                             <input type="email" id="signin-email" class="form-control no-right-icon"
                                 placeholder="you@company.com" autocomplete="email">
                         </div>
@@ -128,22 +135,32 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signin-password">Password</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-lock input-icon"></i>
+
                             <input type="password" id="signin-password" class="form-control"
                                 placeholder="Enter your password" autocomplete="current-password">
+
                             <button type="button" class="toggle-pw" onclick="togglePw('signin-password', this)"
                                 tabindex="-1" aria-label="Show password">
+
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="forgot-row">
-                        <a href="auth/forgot-password.html" class="forgot-link">Forgot password?</a>
+                        <a href="auth/forgot-password.html" class="forgot-link">
+                            Forgot password?
+                        </a>
                     </div>
 
+                    <!-- Turnstile -->
+                    <div id="turnstile-signin" class="turnstile-container"></div>
+
                     <button class="btn btn-primary w-100 auth-submit" id="signin-btn" onclick="handleSignIn()">
+
                         <span>Sign In</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
@@ -161,8 +178,10 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signup-name">Full Name</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-user input-icon"></i>
+
                             <input type="text" id="signup-name" class="form-control no-right-icon"
                                 placeholder="John Doe" autocomplete="name">
                         </div>
@@ -170,8 +189,10 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signup-username">Username</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-at input-icon"></i>
+
                             <input type="text" id="signup-username" class="form-control no-right-icon"
                                 placeholder="johndoe" autocomplete="username">
                         </div>
@@ -179,8 +200,10 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signup-email">Email Address</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-envelope input-icon"></i>
+
                             <input type="email" id="signup-email" class="form-control no-right-icon"
                                 placeholder="you@company.com" autocomplete="email">
                         </div>
@@ -188,39 +211,56 @@
 
                     <div class="form-group">
                         <label class="form-label" for="signup-password">Password</label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-lock input-icon"></i>
+
                             <input type="password" id="signup-password" class="form-control"
                                 placeholder="Min. 8 characters" autocomplete="new-password">
+
                             <button type="button" class="toggle-pw" onclick="togglePw('signup-password', this)"
                                 tabindex="-1" aria-label="Show password">
+
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="signup-confirm">Confirm Password</label>
+                        <label class="form-label" for="signup-confirm">
+                            Confirm Password
+                        </label>
+
                         <div class="input-wrap">
                             <i class="fa-solid fa-lock input-icon"></i>
+
                             <input type="password" id="signup-confirm" class="form-control"
                                 placeholder="Repeat your password" autocomplete="new-password">
+
                             <button type="button" class="toggle-pw" onclick="togglePw('signup-confirm', this)"
                                 tabindex="-1" aria-label="Show password">
+
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
+                    <!-- Turnstile -->
+                    <div id="turnstile-signup" class="turnstile-container"></div>
+
                     <button class="btn btn-primary w-100 auth-submit" id="signup-btn" onclick="handleSignUp()">
+
                         <span>Create Account</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
                     <div class="guest-note">
                         <i class="fa-solid fa-circle-info"></i>
-                        <span>Your account defaults to <strong>Guest</strong> access. An administrator will assign your
-                            role before you can log in.</span>
+
+                        <span>
+                            Your account defaults to <strong>Guest</strong> access.
+                            An administrator will assign your role before you can log in.
+                        </span>
                     </div>
 
                 </div>
@@ -233,195 +273,694 @@
 
     <!-- ===== SCRIPTS ===== -->
     <script>
-        /* ── Tab switcher ── */
+
+        /* =========================================================
+           CLOUDFLARE TURNSTILE
+           ========================================================= */
+
+        const TURNSTILE_SITE_KEY = '0x4AAAAAAERhdebW6aaposOO';
+
+        let signinTurnstileWidget = null;
+        let signupTurnstileWidget = null;
+
+        let signinTurnstileToken = null;
+        let signupTurnstileToken = null;
+
+        let turnstileInitialized = false;
+
+        function initializeTurnstile() {
+
+            if (turnstileInitialized) return;
+
+            if (typeof turnstile === 'undefined') {
+                setTimeout(initializeTurnstile, 200);
+                return;
+            }
+
+            turnstileInitialized = true;
+
+            /* ── Sign In widget ── */
+            signinTurnstileWidget = turnstile.render('#turnstile-signin', {
+                sitekey: TURNSTILE_SITE_KEY,
+                theme: 'light',
+                size: 'flexible',
+                appearance: 'interaction-only',
+
+                callback: function (token) {
+                    signinTurnstileToken = token;
+                },
+
+                'expired-callback': function () {
+                    signinTurnstileToken = null;
+                },
+
+                'error-callback': function () {
+                    signinTurnstileToken = null;
+                    showToast('Security verification failed. Please try again.', 'error');
+                }
+            });
+
+
+            /* ── Sign Up widget ── */
+            signupTurnstileWidget = turnstile.render('#turnstile-signup', {
+                sitekey: TURNSTILE_SITE_KEY,
+                theme: 'light',
+                size: 'flexible',
+                appearance: 'interaction-only',
+
+                callback: function (token) {
+                    signupTurnstileToken = token;
+                },
+
+                'expired-callback': function () {
+                    signupTurnstileToken = null;
+                },
+
+                'error-callback': function () {
+                    signupTurnstileToken = null;
+                    showToast('Security verification failed. Please try again.', 'error');
+                }
+            });
+        }
+
+        window.addEventListener('load', initializeTurnstile);
+
+
+        /* =========================================================
+           TAB SWITCHER
+           ========================================================= */
+
         window.switchTab = function (tab) {
+
             const isSignin = tab === 'signin';
-            document.getElementById('tab-signin').classList.toggle('active', isSignin);
-            document.getElementById('tab-signup').classList.toggle('active', !isSignin);
-            document.getElementById('panel-signin').classList.toggle('active', isSignin);
-            document.getElementById('panel-signup').classList.toggle('active', !isSignin);
-            document.getElementById('tab-slider').classList.toggle('right', !isSignin);
+
+            document.getElementById('tab-signin')
+                .classList.toggle('active', isSignin);
+
+            document.getElementById('tab-signup')
+                .classList.toggle('active', !isSignin);
+
+            document.getElementById('panel-signin')
+                .classList.toggle('active', isSignin);
+
+            document.getElementById('panel-signup')
+                .classList.toggle('active', !isSignin);
+
+            document.getElementById('tab-slider')
+                .classList.toggle('right', !isSignin);
         };
 
 
-        /* ── Password visibility toggle ── */
+        /* =========================================================
+           PASSWORD VISIBILITY TOGGLE
+           ========================================================= */
+
         window.togglePw = function (id, btn) {
+
             const input = document.getElementById(id);
             const icon = btn.querySelector('i');
+
             const hidden = input.type === 'password';
+
             input.type = hidden ? 'text' : 'password';
+
             icon.classList.toggle('fa-eye', !hidden);
             icon.classList.toggle('fa-eye-slash', hidden);
         };
 
 
-        /* ── Access denied banner ── */
+        /* =========================================================
+           ACCESS DENIED BANNER
+           ========================================================= */
+
         (function () {
-            if (new URLSearchParams(window.location.search).get('denied') === 'true') {
-                document.getElementById('access-denied-banner').classList.add('show');
-                setTimeout(() => document.getElementById('access-denied-banner').classList.remove('show'), 6000);
+
+            if (
+                new URLSearchParams(window.location.search)
+                    .get('denied') === 'true'
+            ) {
+
+                document
+                    .getElementById('access-denied-banner')
+                    .classList.add('show');
+
+                setTimeout(() => {
+
+                    document
+                        .getElementById('access-denied-banner')
+                        .classList.remove('show');
+
+                }, 6000);
             }
+
         })();
 
 
-        /* ── Sign In handler ── */
+        /* =========================================================
+           SIGN IN
+           ========================================================= */
+
         window.handleSignIn = async function () {
-            const email = document.getElementById('signin-email').value.trim();
-            const password = document.getElementById('signin-password').value;
-            const btn = document.getElementById('signin-btn');
+
+            const email =
+                document.getElementById('signin-email').value.trim();
+
+            const password =
+                document.getElementById('signin-password').value;
+
+            const btn =
+                document.getElementById('signin-btn');
+
+
+            /* ── Basic validation ── */
 
             if (!email || !password) {
-                showToast('Please fill in all fields.', 'error'); return;
-            }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showToast('Please enter a valid email address.', 'error'); return;
-            }
 
-            btn.disabled = true;
-            btn.innerHTML = '<div class="btn-spinner"></div><span>Signing in...</span>';
-            showToast('Signing you in...', 'info');
+                showToast(
+                    'Please fill in all fields.',
+                    'error'
+                );
 
-            const { data, error } = await db.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                const msg = /email not confirmed/i.test(error.message || '')
-                    ? 'Please verify your email before signing in. Check your inbox for the confirmation link.'
-                    : (error.message || 'Invalid email or password.');
-                showToast(msg, 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
                 return;
             }
 
-            const { data: profile } = await db
-                .from('users').select('role, username').eq('id', data.user.id).single();
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
+                showToast(
+                    'Please enter a valid email address.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            /* ── CAPTCHA validation ── */
+
+            if (!signinTurnstileToken) {
+
+                showToast(
+                    'Please complete the security verification.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            /* ── Loading state ── */
+
+            btn.disabled = true;
+
+            btn.innerHTML =
+                '<div class="btn-spinner"></div><span>Signing in...</span>';
+
+            showToast(
+                'Signing you in...',
+                'info'
+            );
+
+
+            /* ── Supabase authentication ── */
+
+            const { data, error } =
+                await db.auth.signInWithPassword({
+
+                    email,
+                    password,
+
+                    options: {
+                        captchaToken: signinTurnstileToken
+                    }
+                });
+
+
+            /* ── Authentication error ── */
+
+            if (error) {
+
+                const msg =
+                    /email not confirmed/i.test(
+                        error.message || ''
+                    )
+                        ? 'Please verify your email before signing in. Check your inbox for the confirmation link.'
+                        : (
+                            error.message ||
+                            'Invalid email or password.'
+                        );
+
+
+                showToast(msg, 'error');
+
+
+                /* Reset Turnstile */
+
+                signinTurnstileToken = null;
+
+                if (signinTurnstileWidget !== null) {
+                    turnstile.reset(signinTurnstileWidget);
+                }
+
+
+                btn.disabled = false;
+
+                btn.innerHTML =
+                    '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
+
+                return;
+            }
+
+
+            /* =====================================================
+               LOAD USER PROFILE
+               ===================================================== */
+
+            const { data: profile } =
+                await db
+                    .from('users')
+                    .select('role, username')
+                    .eq('id', data.user.id)
+                    .single();
+
+
+            /* ── Profile not found ── */
 
             if (!profile) {
+
                 await db.auth.signOut();
-                showToast('Account profile not found. Contact admin.', 'error');
+
+                showToast(
+                    'Account profile not found. Contact admin.',
+                    'error'
+                );
+
+
                 btn.disabled = false;
-                btn.innerHTML = '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
+
+                btn.innerHTML =
+                    '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
+
                 return;
             }
+
+
+            /* ── Guest restriction ── */
 
             if (profile.role === 'guest') {
+
                 await db.auth.signOut();
-                showToast('Your role has not been assigned yet. Contact admin.', 'error');
+
+                showToast(
+                    'Your role has not been assigned yet. Contact admin.',
+                    'error'
+                );
+
+
                 btn.disabled = false;
-                btn.innerHTML = '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
+
+                btn.innerHTML =
+                    '<span>Sign In</span><i class="fa-solid fa-arrow-right"></i>';
+
                 return;
             }
 
-            showToast(`Welcome back, ${profile.username}!`, 'success');
-            setTimeout(() => { window.location.href = '/dashboard/home.html'; }, 1000);
+
+            /* ── Successful login ── */
+
+            showToast(
+                `Welcome back, ${profile.username}!`,
+                'success'
+            );
+
+
+            setTimeout(() => {
+
+                window.location.href =
+                    '/dashboard/home.html';
+
+            }, 1000);
+
         };
 
 
-        /* ── Sign Up handler ── */
-        window.handleSignUp = async function () {
-            const fullName = document.getElementById('signup-name').value.trim();
-            const username = document.getElementById('signup-username').value.trim().toLowerCase();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const confirm = document.getElementById('signup-confirm').value;
-            const btn = document.getElementById('signup-btn');
+        /* =========================================================
+           SIGN UP
+           ========================================================= */
 
-            if (!fullName || !username || !email || !password || !confirm) {
-                showToast('Please fill in all fields.', 'error'); return;
+        window.handleSignUp = async function () {
+
+            const fullName =
+                document.getElementById('signup-name')
+                    .value.trim();
+
+            const username =
+                document.getElementById('signup-username')
+                    .value.trim()
+                    .toLowerCase();
+
+            const email =
+                document.getElementById('signup-email')
+                    .value.trim();
+
+            const password =
+                document.getElementById('signup-password')
+                    .value;
+
+            const confirm =
+                document.getElementById('signup-confirm')
+                    .value;
+
+            const btn =
+                document.getElementById('signup-btn');
+
+
+            /* ── Basic validation ── */
+
+            if (
+                !fullName ||
+                !username ||
+                !email ||
+                !password ||
+                !confirm
+            ) {
+
+                showToast(
+                    'Please fill in all fields.',
+                    'error'
+                );
+
+                return;
             }
+
+
             if (username.length < 3) {
-                showToast('Username must be at least 3 characters.', 'error'); return;
+
+                showToast(
+                    'Username must be at least 3 characters.',
+                    'error'
+                );
+
+                return;
             }
+
+
             if (!/^[a-z0-9_]+$/.test(username)) {
-                showToast('Username: letters, numbers and underscores only.', 'error'); return;
+
+                showToast(
+                    'Username: letters, numbers and underscores only.',
+                    'error'
+                );
+
+                return;
             }
+
+
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showToast('Please enter a valid email address.', 'error'); return;
+
+                showToast(
+                    'Please enter a valid email address.',
+                    'error'
+                );
+
+                return;
             }
+
+
             if (password.length < 8) {
-                showToast('Password must be at least 8 characters.', 'error'); return;
+
+                showToast(
+                    'Password must be at least 8 characters.',
+                    'error'
+                );
+
+                return;
             }
+
+
             if (password !== confirm) {
-                showToast('Passwords do not match.', 'error'); return;
+
+                showToast(
+                    'Passwords do not match.',
+                    'error'
+                );
+
+                return;
             }
+
+
+            /* ── CAPTCHA validation ── */
+
+            if (!signupTurnstileToken) {
+
+                showToast(
+                    'Please complete the security verification.',
+                    'error'
+                );
+
+                return;
+            }
+
+
+            /* ── Loading state ── */
 
             btn.disabled = true;
-            btn.innerHTML = '<div class="btn-spinner"></div><span>Creating account...</span>';
-            showToast('Creating your account...', 'info');
 
-            const { data, error } = await db.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name: fullName,
-                        username: username
+            btn.innerHTML =
+                '<div class="btn-spinner"></div><span>Creating account...</span>';
+
+            showToast(
+                'Creating your account...',
+                'info'
+            );
+
+
+            /* =====================================================
+               SUPABASE SIGN UP
+               ===================================================== */
+
+            const { data, error } =
+                await db.auth.signUp({
+
+                    email,
+                    password,
+
+                    options: {
+
+                        captchaToken: signupTurnstileToken,
+
+                        data: {
+                            full_name: fullName,
+                            username: username
+                        }
                     }
-                }
-            });
+                });
+
+
+            /* ── Sign up error ── */
 
             if (error) {
-                showToast(error.message || 'Sign up failed. Please try again.', 'error');
+
+                showToast(
+                    error.message ||
+                    'Sign up failed. Please try again.',
+                    'error'
+                );
+
+
+                signupTurnstileToken = null;
+
+                if (signupTurnstileWidget !== null) {
+                    turnstile.reset(signupTurnstileWidget);
+                }
+
+
                 btn.disabled = false;
-                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
+                btn.innerHTML =
+                    '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
                 return;
             }
 
-            const { error: insertError } = await db.from('users').insert({
-                id: data.user.id,
-                full_name: fullName,
-                username: username,
-                email: email,
-                role: 'guest',
-                is_active: true,
-                created_at: new Date().toISOString()
-            });
+
+            /* =====================================================
+               CREATE USER PROFILE
+               ===================================================== */
+
+            const { error: insertError } =
+                await db
+                    .from('users')
+                    .insert({
+
+                        id: data.user.id,
+                        full_name: fullName,
+                        username: username,
+                        email: email,
+                        role: 'guest',
+                        is_active: true,
+                        created_at: new Date().toISOString()
+                    });
+
+
+            /* ── Profile creation failed ── */
 
             if (insertError) {
+
                 await db.auth.signOut();
+
+
                 if (insertError.code === '23505') {
-                    showToast('Username already taken. Please choose another.', 'error');
+
+                    showToast(
+                        'Username already taken. Please choose another.',
+                        'error'
+                    );
+
                 } else {
-                    showToast('Account creation failed. Please try again.', 'error');
+
+                    showToast(
+                        'Account creation failed. Please try again.',
+                        'error'
+                    );
                 }
+
+
+                signupTurnstileToken = null;
+
+                if (signupTurnstileWidget !== null) {
+                    turnstile.reset(signupTurnstileWidget);
+                }
+
+
                 btn.disabled = false;
-                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
+                btn.innerHTML =
+                    '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
                 return;
             }
 
-            showToast('Account created! Check your inbox to verify your email before signing in.', 'success');
+
+            /* =====================================================
+               SUCCESS
+               ===================================================== */
+
+            showToast(
+                'Account created! Check your inbox to verify your email before signing in.',
+                'success'
+            );
+
+
             btn.disabled = false;
-            btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
+            btn.innerHTML =
+                '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
+
+
+            /* Reset Turnstile */
+
+            signupTurnstileToken = null;
+
+            if (signupTurnstileWidget !== null) {
+                turnstile.reset(signupTurnstileWidget);
+            }
+
+
+            /* Switch to sign in */
 
             switchTab('signin');
-            document.getElementById('signin-email').value = email;
-            ['signup-name', 'signup-username', 'signup-email', 'signup-password', 'signup-confirm']
-                .forEach(id => { document.getElementById(id).value = ''; });
+
+            document.getElementById('signin-email').value =
+                email;
+
+
+            [
+                'signup-name',
+                'signup-username',
+                'signup-email',
+                'signup-password',
+                'signup-confirm'
+            ]
+                .forEach(id => {
+
+                    document.getElementById(id).value = '';
+
+                });
+
         };
 
-        /* ── Enter key support ── */
-        document.addEventListener('keydown', function (e) {
-            if (e.key !== 'Enter') return;
-            if (document.getElementById('panel-signin').classList.contains('active')) {
-                handleSignIn();
-            } else {
-                handleSignUp();
-            }
-        });
 
-        /* ── Session check ── */
+        /* =========================================================
+           ENTER KEY SUPPORT
+           ========================================================= */
+
+        document.addEventListener(
+            'keydown',
+            function (e) {
+
+                if (e.key !== 'Enter') return;
+
+
+                if (
+                    document
+                        .getElementById('panel-signin')
+                        .classList
+                        .contains('active')
+                ) {
+
+                    handleSignIn();
+
+                } else {
+
+                    handleSignUp();
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           SESSION CHECK
+           ========================================================= */
+
         (async function () {
-            const { data: { session } } = await db.auth.getSession();
+
+            const {
+                data: {
+                    session
+                }
+            } = await db.auth.getSession();
+
+
             if (!session) return;
+
+
             if (!session.user.email_confirmed_at) {
+
                 await db.auth.signOut();
+
                 return;
             }
-            const { data: profile } = await db
-                .from('users').select('role').eq('id', session.user.id).single();
-            if (profile && profile.role !== 'guest') {
-                window.location.href = '/dashboard/home.html';
+
+
+            const { data: profile } =
+                await db
+                    .from('users')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+
+            if (
+                profile &&
+                profile.role !== 'guest'
+            ) {
+
+                window.location.href =
+                    '/dashboard/home.html';
             }
+
         })();
 
     </script>
