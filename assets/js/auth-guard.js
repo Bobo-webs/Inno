@@ -52,6 +52,20 @@ const PAGE_ACCESS = {
         return;
     }
 
+    /* Idle timeout */
+    const IDLE_LIMIT_MS = 12 * 60 * 60 * 1000; // 12 hours
+    const remembered = localStorage.getItem('inno-remember') === 'true';
+
+    if (!remembered) {
+        const lastActivity = sessionStorage.getItem('inno-last-activity');
+        if (lastActivity && (Date.now() - parseInt(lastActivity, 10)) > IDLE_LIMIT_MS) {
+            await db.auth.signOut();
+            _deny();
+            return;
+        }
+        sessionStorage.setItem('inno-last-activity', String(Date.now()));
+    }
+
     window.currentUser = Object.freeze({
         id: profile.id,
         username: profile.username,

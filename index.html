@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inno Inventory</title>
+    <title>Inno-Chike Inventory</title>
     <style>
         html:not(.auth-ok) body {
             visibility: hidden;
@@ -112,7 +112,7 @@
             <div class="auth-brand">
                 <div class="auth-brand-logo">I</div>
                 <div>
-                    <div class="auth-brand-name">Inno</div>
+                    <div class="auth-brand-name">Inno-Chike</div>
                     <div class="auth-brand-sub">Inventory System</div>
                 </div>
             </div>
@@ -164,7 +164,7 @@
                 <div class="auth-brand auth-brand-right" style="margin-bottom: 2rem;">
                     <div class="auth-brand-logo" style="background:var(--primary) !important;">I</div>
                     <div>
-                        <div class="auth-brand-name" style="color:#000 !important;">Inno</div>
+                        <div class="auth-brand-name" style="color:#000 !important;">Inno-Chike</div>
                         <div class="auth-brand-sub" style="color:#000 !important;">Inventory Management</div>
                     </div>
                 </div>
@@ -215,6 +215,11 @@
                             </button>
                         </div>
                     </div>
+                    <label
+                        style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);margin:10px 0;cursor:pointer;">
+                        <input type="checkbox" id="remember-me" style="width:15px;height:15px;">
+                        Remember me
+                    </label>
 
                     <div class="forgot-row">
                         <a href="auth/forgot-password.html" class="forgot-link">
@@ -549,6 +554,9 @@
 
 
             /* ── Supabase authentication ── */
+
+            const remember = document.getElementById('remember-me').checked;
+            localStorage.setItem('inno-remember', String(remember));
 
             const { data, error } =
                 await db.auth.signInWithPassword({
@@ -989,44 +997,24 @@
         /* =========================================================
            SESSION CHECK
            ========================================================= */
-
         (async function () {
-
-            const {
-                data: {
-                    session
-                }
-            } = await db.auth.getSession();
-
-
-            if (!session) return;
-
-
-            if (!session.user.email_confirmed_at) {
-
-                await db.auth.signOut();
-
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) {
+                document.documentElement.classList.add('auth-ok');
                 return;
             }
-
-
-            const { data: profile } =
-                await db
-                    .from('users')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
-
-
-            if (
-                profile &&
-                profile.role !== 'guest'
-            ) {
-
-                window.location.href =
-                    '/dashboard/home.html';
+            if (!session.user.email_confirmed_at) {
+                await db.auth.signOut();
+                document.documentElement.classList.add('auth-ok');
+                return;
             }
-
+            const { data: profile } = await db
+                .from('users').select('role').eq('id', session.user.id).single();
+            if (profile && profile.role !== 'guest') {
+                window.location.href = '/dashboard/home.html';
+                return;
+            }
+            document.documentElement.classList.add('auth-ok');
         })();
 
     </script>
