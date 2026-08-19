@@ -1,5 +1,5 @@
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_ADDRESS = "Inno-Chike <admin@inno-chike.com.ng>";
+const FROM_ADDRESS = "Inno-Chike <noreply@inno-chike.com.ng>";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
