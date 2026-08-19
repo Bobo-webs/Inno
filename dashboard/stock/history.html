@@ -9,6 +9,62 @@
         html:not(.auth-ok) body {
             visibility: hidden;
         }
+
+        #auth-loader {
+            visibility: visible;
+        }
+
+        html.auth-ok #auth-loader {
+            display: none;
+        }
+
+        #auth-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #auth-loader-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #1d4ed8;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            animation: innoPulse 1.3s ease-in-out infinite;
+        }
+
+        #auth-loader-text {
+            margin-top: 14px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        @keyframes innoPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(0.85);
+                opacity: 0.65;
+            }
+        }
     </style>
 
     <!-- External Styling -->
@@ -33,6 +89,12 @@
 </head>
 
 <body data-page="history">
+    <!-- ===== AUTH LOADER ===== -->
+    <div id="auth-loader">
+        <div id="auth-loader-badge">I</div>
+        <div id="auth-loader-text">Loading...</div>
+    </div>
+
     <style>
         .stat-card {
             background: var(--card);
