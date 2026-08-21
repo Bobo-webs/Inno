@@ -1,6 +1,5 @@
 /* ==== SIDEBAR.JS ==== */
 
-
 const SIDEBAR_NAV = [
     {
         section: 'MENU',
@@ -198,12 +197,17 @@ window.renderSidebar = async function (activePage, userRole) {
             }
             .sidebar-brand-logo {
                 width: 38px; height: 38px;
-                background: #1d4ed8;
+                background: #f1f5f9;
                 border-radius: 10px;
                 display: flex; align-items: center; justify-content: center;
                 font-size: 18px; font-weight: 800; color: white;
                 flex-shrink: 0;
                 letter-spacing: -0.5px;
+            }
+            .sidebar-brand-logo img {
+                width: 30px;
+                height: 30px;
+                object-fit: cover;
             }
             .sidebar-brand-name {
                 font-size: 17px;
@@ -439,9 +443,11 @@ window.renderSidebar = async function (activePage, userRole) {
 
             <!-- Brand -->
             <div class="sidebar-brand">
-                <div class="sidebar-brand-logo">I</div>
+                <div class="sidebar-brand-logo">
+                    <img class="logo" src="../../assets/images/logo.png" alt="Logo">
+                </div>
                 <div>
-                    <div class="sidebar-brand-name">Inno</div>
+                    <div class="sidebar-brand-name">Inno-Chike</div>
                     <div class="sidebar-brand-sub">Inventory</div>
                 </div>
             </div>
