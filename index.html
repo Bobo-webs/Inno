@@ -386,6 +386,31 @@
 
         let turnstileInitialized = false;
 
+        /* ── Wait until Turnstile's iframe actually renders, with a safety timeout ── */
+        function waitForTurnstileRender(containerId, timeoutMs = 4000) {
+            return new Promise((resolve) => {
+                const container = document.getElementById(containerId);
+                if (!container) return resolve();
+
+                if (container.querySelector('iframe')) return resolve();
+
+                const observer = new MutationObserver(() => {
+                    if (container.querySelector('iframe')) {
+                        observer.disconnect();
+                        clearTimeout(timer);
+                        resolve();
+                    }
+                });
+
+                observer.observe(container, { childList: true, subtree: true });
+
+                const timer = setTimeout(() => {
+                    observer.disconnect();
+                    resolve();
+                }, timeoutMs);
+            });
+        }
+
         function initializeTurnstile() {
 
             if (turnstileInitialized) return;
@@ -1009,11 +1034,13 @@
         (async function () {
             const { data: { session } } = await db.auth.getSession();
             if (!session) {
+                await waitForTurnstileRender('turnstile-signin');
                 document.documentElement.classList.add('auth-ok');
                 return;
             }
             if (!session.user.email_confirmed_at) {
                 await db.auth.signOut();
+                await waitForTurnstileRender('turnstile-signin');
                 document.documentElement.classList.add('auth-ok');
                 return;
             }
@@ -1023,6 +1050,7 @@
                 window.location.href = '/dashboard/home.html';
                 return;
             }
+            await waitForTurnstileRender('turnstile-signin');
             document.documentElement.classList.add('auth-ok');
         })();
 
