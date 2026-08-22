@@ -35,7 +35,7 @@ function populateUserUI() {
     const initials = getInitials(user.full_name || user.username);
     document.getElementById('topbar-avatar').textContent = initials;
     document.getElementById('topbar-username').textContent = '' + user.username;
-    document.getElementById('greeting').textContent = getGreeting() + ', ' + (user.full_name?.split(' ')[0] || user.username) + ' 👋';
+    document.getElementById('greeting').textContent = getGreeting() + ', ' + (user.full_name?.split(' ')[0] || user.username);
 
     /* Date */
     document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-GB', {
