@@ -387,27 +387,37 @@
         let turnstileInitialized = false;
 
         /* ── Wait until Turnstile's iframe actually renders, with a safety timeout ── */
-        function waitForTurnstileRender(containerId, timeoutMs = 4000) {
+        function waitForTurnstileRender(containerId, timeoutMs = 8000) {
             return new Promise((resolve) => {
                 const container = document.getElementById(containerId);
                 if (!container) return resolve();
 
-                if (container.querySelector('iframe')) return resolve();
+                let settled = false;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    observer.disconnect();
+                    resolve();
+                };
+
+                const watchIframe = (iframe) => {
+                    if (iframe.dataset.ttWatched) return;
+                    iframe.dataset.ttWatched = '1';
+                    iframe.addEventListener('load', finish, { once: true });
+                };
+
+                const existing = container.querySelector('iframe');
+                if (existing) watchIframe(existing);
 
                 const observer = new MutationObserver(() => {
-                    if (container.querySelector('iframe')) {
-                        observer.disconnect();
-                        clearTimeout(timer);
-                        resolve();
-                    }
+                    const iframe = container.querySelector('iframe');
+                    if (iframe) watchIframe(iframe);
                 });
 
                 observer.observe(container, { childList: true, subtree: true });
 
-                const timer = setTimeout(() => {
-                    observer.disconnect();
-                    resolve();
-                }, timeoutMs);
+                const timer = setTimeout(finish, timeoutMs);
             });
         }
 
