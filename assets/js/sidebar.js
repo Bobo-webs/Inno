@@ -324,8 +324,8 @@ window.renderSidebar = async function (activePage, userRole) {
             /* ── User card ── */
             .sidebar-user {
                 padding: 12px;
-                margin-bottom: calc(46px + env(safe-area-inset-bottom, 0px));
                 margin: 8px;
+                margin-bottom: calc(46px + env(safe-area-inset-bottom, 0px));
                 background: rgba(255,255,255,0.05);
                 border: 1px solid rgba(255,255,255,0.08);
                 border-radius: 10px;
