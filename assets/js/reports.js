@@ -15,11 +15,6 @@ function getInitials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function formatCurrency(val) {
-    if (!val && val !== 0) return '$0.00';
-    return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 function formatDate(str) {
     if (!str) return '—';
     return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -536,6 +531,8 @@ window.exportReport = async function (format) {
         window.location.href = '../index.html?denied=true';
         return;
     }
+
+    await initCurrency();
 
     userRole = window.currentUser.role;
 

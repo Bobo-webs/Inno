@@ -19,13 +19,6 @@ function getInitials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function formatCurrency(val) {
-    if (!val && val !== 0) return '—';
-    if (val >= 1_000_000) return '$' + (val / 1_000_000).toFixed(1) + 'M';
-    if (val >= 1_000) return '$' + (val / 1_000).toFixed(1) + 'K';
-    return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     const icon = document.getElementById('theme-icon');
@@ -428,6 +421,8 @@ document.addEventListener('keydown', function (e) {
         window.location.href = '../index.html?denied=true';
         return;
     }
+
+    await initCurrency();
 
     userRole = window.currentUser.role;
     canManage = can('suppliers', 'edit', userRole);

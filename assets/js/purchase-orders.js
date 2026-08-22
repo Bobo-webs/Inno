@@ -21,11 +21,6 @@ function getInitials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function formatCurrency(val) {
-    if (!val && val !== 0) return '—';
-    return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 function formatDate(dateStr) {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleString('en-GB', {
@@ -952,6 +947,8 @@ document.addEventListener('keydown', function (e) {
         window.location.href = '../index.html?denied=true';
         return;
     }
+
+    await initCurrency();
 
     userRole = window.currentUser.role;
     canApprove = can('purchase_orders', 'approve', userRole);

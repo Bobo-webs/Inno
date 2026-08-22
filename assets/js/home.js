@@ -12,12 +12,6 @@ function getInitials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function formatCurrency(val) {
-    if (val >= 1_000_000) return '$' + (val / 1_000_000).toFixed(1) + 'M';
-    if (val >= 1_000) return '$' + (val / 1_000).toFixed(1) + 'K';
-    return '$' + val.toLocaleString();
-}
-
 function timeAgo(dateStr) {
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
     if (diff < 60) return 'just now';
@@ -445,6 +439,7 @@ function startRealtime() {
         return;
     }
 
+    await initCurrency();
     populateUserUI();
     renderSidebar('home', window.currentUser.role);
     await loadDashboard();

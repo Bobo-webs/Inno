@@ -149,29 +149,30 @@
                     <!-- Real content — hidden until loaded -->
                     <div id="real-settings" style="display:none;display:flex;flex-direction:column;gap:20px;">
 
-                        <!-- ── Section 1: Company Profile ── -->
+                        <!-- ── Section: Inventory & Currency ── -->
                         <div class="settings-card fade-in">
                             <div class="settings-card-header">
-                                <div class="settings-card-icon blue"><i class="fa-solid fa-building"></i></div>
+                                <div class="settings-card-icon green"><i class="fa-solid fa-boxes-stacked"></i></div>
                                 <div>
-                                    <div class="settings-card-title">Company Profile</div>
-                                    <div class="settings-card-desc">Shown on exported reports and documents</div>
+                                    <div class="settings-card-title">Inventory & Currency</div>
+                                    <div class="settings-card-desc">Stock behavior and how monetary values are displayed
+                                    </div>
                                 </div>
                             </div>
                             <div class="settings-card-body">
+
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Company Name <span>*</span></label>
-                                        <input type="text" class="form-control" id="s-company-name"
-                                            placeholder="e.g. Inno-Chike Nigeria Ltd">
+                                        <label class="form-label">Display Currency</label>
+                                        <select class="form-control" id="s-currency-code">
+                                            <option value="USD">USD — US Dollar ($)</option>
+                                            <option value="EUR">EUR — Euro (€)</option>
+                                            <option value="GBP">GBP — British Pound (£)</option>
+                                            <option value="NGN">NGN — Nigerian Naira (₦)</option>
+                                        </select>
+                                        <div class="form-hint">Converts live for viewing only — all figures are still
+                                            entered and stored in USD</div>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Currency Symbol</label>
-                                        <input type="text" class="form-control" id="s-currency-symbol"
-                                            placeholder="e.g. $ or ₦" maxlength="3">
-                                    </div>
-                                </div>
-                                <div class="form-row">
                                     <div class="form-group">
                                         <label class="form-label">Currency Position</label>
                                         <select class="form-control" id="s-currency-position">
@@ -179,39 +180,7 @@
                                             <option value="after">After amount — 500$</option>
                                         </select>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Date Format</label>
-                                        <select class="form-control" id="s-date-format">
-                                            <option value="DD/MM/YYYY">DD/MM/YYYY — 25/05/2026</option>
-                                            <option value="MM/DD/YYYY">MM/DD/YYYY — 05/25/2026</option>
-                                            <option value="YYYY-MM-DD">YYYY-MM-DD — 2026-05-25</option>
-                                        </select>
-                                    </div>
                                 </div>
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label class="form-label">Company Address</label>
-                                    <textarea class="form-control" id="s-company-address"
-                                        placeholder="Full address — appears on exported reports..."></textarea>
-                                </div>
-                            </div>
-                            <div class="settings-card-footer">
-                                <span class="save-indicator" id="profile-saved"></span>
-                                <button class="btn btn-primary btn-sm" onclick="saveSection('profile')">
-                                    <i class="fa-solid fa-check"></i> Save Changes
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- ── Section 2: Inventory Rules ── -->
-                        <div class="settings-card fade-in" style="animation-delay:0.05s;">
-                            <div class="settings-card-header">
-                                <div class="settings-card-icon green"><i class="fa-solid fa-boxes-stacked"></i></div>
-                                <div>
-                                    <div class="settings-card-title">Inventory Rules</div>
-                                    <div class="settings-card-desc">Control how stock behaves across the system</div>
-                                </div>
-                            </div>
-                            <div class="settings-card-body">
 
                                 <div class="form-group" style="margin-bottom:20px;">
                                     <label class="form-label">Default Reorder Level</label>
@@ -248,49 +217,6 @@
                             <div class="settings-card-footer">
                                 <span class="save-indicator" id="inventory-saved"></span>
                                 <button class="btn btn-primary btn-sm" onclick="saveSection('inventory')">
-                                    <i class="fa-solid fa-check"></i> Save Changes
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- ── Section 3: Appearance ── -->
-                        <div class="settings-card fade-in" style="animation-delay:0.1s;">
-                            <div class="settings-card-header">
-                                <div class="settings-card-icon purple"><i class="fa-solid fa-palette"></i></div>
-                                <div>
-                                    <div class="settings-card-title">Appearance</div>
-                                    <div class="settings-card-desc">Choose how the system looks across all devices</div>
-                                </div>
-                            </div>
-                            <div class="settings-card-body">
-                                <label class="form-label" style="margin-bottom:12px;">Theme</label>
-                                <div class="theme-options">
-                                    <div class="theme-option" id="theme-light" onclick="selectTheme('light')">
-                                        <div class="theme-option-preview light">
-                                            <div class="sidebar-mock"></div>
-                                            <div class="content-mock"></div>
-                                        </div>
-                                        <div class="theme-option-label">Light</div>
-                                    </div>
-                                    <div class="theme-option" id="theme-dark" onclick="selectTheme('dark')">
-                                        <div class="theme-option-preview dark">
-                                            <div class="sidebar-mock"></div>
-                                            <div class="content-mock"></div>
-                                        </div>
-                                        <div class="theme-option-label">Dark</div>
-                                    </div>
-                                    <div class="theme-option" id="theme-system" onclick="selectTheme('system')">
-                                        <div class="theme-option-preview system">
-                                            <div class="sidebar-mock"></div>
-                                            <div class="content-mock"></div>
-                                        </div>
-                                        <div class="theme-option-label">System</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="settings-card-footer">
-                                <span class="save-indicator" id="appearance-saved"></span>
-                                <button class="btn btn-primary btn-sm" onclick="saveSection('appearance')">
                                     <i class="fa-solid fa-check"></i> Save Changes
                                 </button>
                             </div>
@@ -355,6 +281,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/toast.js"></script>
     <script src="../assets/js/supabase.js"></script>
+    <script src="../assets/js/currency.js"></script>
     <script src="../assets/js/auth-guard.js"></script>
     <script src="../assets/js/logger.js"></script>
     <script src="../assets/js/sidebar.js"></script>
