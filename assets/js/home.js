@@ -384,11 +384,11 @@ window.onPeriodChange = async function (select) {
     const customRow = document.getElementById('chart-custom-range');
 
     if (val === 'custom') {
-        customRow.classList.add('show');
+        customRow.style.display = 'flex';
         return;
     }
 
-    customRow.classList.remove('show');
+    customRow.style.display = 'none';
     currentPeriod = parseInt(val);
     await loadChartData(currentPeriod);
 };
