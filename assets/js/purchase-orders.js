@@ -654,24 +654,91 @@ window.submitPO = async function (poId) {
 };
 
 /* ══════ VIEW MODAL ══════ */
-
-window.viewPO = function (poId) {
+window.viewPO = async function (poId) {
     const po = allPOs.find(p => p.id === poId);
     if (!po) return;
 
     document.getElementById('view-po-number').textContent = po.po_number;
     document.getElementById('view-po-date').textContent = `Created ${formatDate(po.created_at)}`;
 
-    const poTotal = (po.purchase_order_items || []).reduce((s, i) => s + (i.quantity * i.unit_cost), 0);
+    const items = po.purchase_order_items || [];
+    const showCost = can('financial_data', 'view', userRole);
+    let costMap = {};
 
-    const itemsRows = (po.purchase_order_items || []).map(item => `
+    if (showCost) {
+        if (po.status === 'approved') {
+            const { data: allocations } = await db
+                .from('stock_allocations')
+                .select('product_id, quantity_used, unit_cost_at_time')
+                .eq('po_id', po.id)
+                .order('unit_cost_at_time', { ascending: false });
+
+            (allocations || []).forEach(a => {
+                if (!costMap[a.product_id]) costMap[a.product_id] = { qty: 0, cost: 0, batches: [] };
+                costMap[a.product_id].qty += a.quantity_used;
+                costMap[a.product_id].cost += a.quantity_used * a.unit_cost_at_time;
+                costMap[a.product_id].batches.push({ qty: a.quantity_used, cost: a.unit_cost_at_time });
+            });
+        } else {
+            const results = await Promise.all(
+                items.map(item => db.rpc('preview_fifo_cost', {
+                    p_product_id: item.products?.id,
+                    p_quantity: item.quantity
+                }))
+            );
+            items.forEach((item, i) => {
+                const val = results[i]?.data;
+                if (item.products?.id && val !== null && val !== undefined) {
+                    costMap[item.products.id] = { qty: item.quantity, cost: val * item.quantity, batches: null };
+                }
+            });
+        }
+    }
+
+    const poTotal = items.reduce((s, i) => s + (i.quantity * i.unit_cost), 0);
+    const costLabel = po.status === 'approved' ? 'Purchase Cost' : 'Est. Cost';
+
+    const itemsRows = items.map((item, idx) => {
+        const bucket = costMap[item.products?.id];
+        const avgCost = bucket && bucket.qty > 0 ? bucket.cost / bucket.qty : null;
+        const costCell = !showCost ? '••••' : (avgCost !== null ? formatCurrency(avgCost) : '—');
+        const marginPerUnit = (showCost && avgCost !== null) ? (item.unit_cost - avgCost) : null;
+        const marginCell = marginPerUnit !== null ? formatCurrency(marginPerUnit) + '/unit' : '—';
+        const marginColor = marginPerUnit !== null && marginPerUnit < 0 ? 'var(--danger)' : 'var(--success)';
+
+        const hasBreakdown = showCost && bucket?.batches && bucket.batches.length > 1;
+        const rowId = `po-item-breakdown-${idx}`;
+
+        const costCellContent = hasBreakdown
+            ? `${costCell} <button type="button" onclick="toggleBreakdown('${rowId}')" style="border:none;background:none;color:var(--primary);cursor:pointer;font-size:11px;padding:0;margin-left:4px;" title="View batch breakdown"><i class="fa-solid fa-chevron-down"></i></button>`
+            : costCell;
+
+        const breakdownRow = hasBreakdown
+            ? `<tr id="${rowId}" style="display:none;background:var(--bg);">
+                <td colspan="7" style="padding:8px 16px;">
+                    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Batch Breakdown</div>
+                    ${bucket.batches.map(b => `
+                        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;">
+                            <span>${b.qty.toLocaleString()} units</span>
+                            <span style="font-weight:600;">${formatCurrency(b.cost)}/unit</span>
+                            <span style="color:var(--text-muted);">= ${formatCurrency(b.qty * b.cost)}</span>
+                        </div>`).join('')}
+                </td>
+            </tr>`
+            : '';
+
+        return `
         <tr>
             <td>${item.products?.name || '—'}</td>
             <td style="color:var(--text-muted);">${item.products?.sku || '—'}</td>
             <td style="font-weight:600;">${item.quantity.toLocaleString()}</td>
             <td>${formatCurrency(item.unit_cost)}</td>
+            <td>${costCellContent}</td>
+            <td style="color:${marginColor};font-weight:600;">${marginCell}</td>
             <td style="font-weight:700;">${formatCurrency(item.quantity * item.unit_cost)}</td>
-        </tr>`).join('');
+        </tr>
+        ${breakdownRow}`;
+    }).join('');
 
     const rejectionRow = po.rejection_reason
         ? `<div class="detail-row">
@@ -722,7 +789,9 @@ window.viewPO = function (poId) {
                         <th>Product</th>
                         <th>Item Number</th>
                         <th>Qty</th>
-                        <th>Unit Price</th>
+                        <th>Selling Price</th>
+                        <th>${costLabel}</th>
+                        <th>Margin</th>
                         <th>Total</th>
                     </tr>
                 </thead>
@@ -741,6 +810,11 @@ window.viewPO = function (poId) {
 
 window.closeViewModal = function () {
     document.getElementById('view-modal').classList.remove('show');
+};
+
+window.toggleBreakdown = function (rowId) {
+    const row = document.getElementById(rowId);
+    if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 };
 
 /* ══════ CONFIRM MODAL ══════ */

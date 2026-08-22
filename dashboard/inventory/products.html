@@ -471,10 +471,27 @@
     </div>
   </div>
 
+  <!-- ══ COST HISTORY MODAL ══ -->
+  <div class="modal-backdrop" id="cost-history-modal">
+    <div class="modal" style="max-width:520px;">
+        <h3 id="cost-history-title">Cost History</h3>
+        <div class="table-wrap" style="margin:16px 0;max-height:340px;overflow-y:auto;">
+            <table>
+                <thead><tr><th>Date</th><th>Supplier</th><th>Qty Received</th><th>Remaining</th><th>Unit Cost</th></tr></thead>
+                <tbody id="cost-history-tbody"></tbody>
+            </table>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeCostHistoryModal()">Close</button>
+        </div>
+    </div>
+</div>
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../../assets/js/toast.js"></script>
   <script src="../../assets/js/supabase.js"></script>
+  <script src="../../assets/js/currency.js"></script>
   <script src="../../assets/js/auth-guard.js"></script>
   <script src="../../assets/js/permissions.js"></script>
   <script src="../../assets/js/sidebar.js"></script>

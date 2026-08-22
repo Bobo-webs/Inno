@@ -4146,7 +4146,8 @@ textarea.form-control {
 
 /* ── SETTINGS PAGE ── */
 .settings-wrap {
-    max-width: 680px;
+    max-width: 720px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 20px;

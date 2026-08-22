@@ -171,12 +171,18 @@ function renderProductsTable() {
         const isNew = window.pageLastSeen && p.created_by !== window.currentUser.id &&
             new Date(p.created_at) > new Date(window.pageLastSeen);
         const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
-        const actions = canEditProducts ? `
+        const costBtn = can('financial_data', 'view', userRole)
+            ? `<button class="action-btn" onclick="openCostHistory('${p.id}')" title="Cost History">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>` : '';
+
+        const actions = `
             <div class="action-btns">
-                <button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
+                ${costBtn}
+                ${canEditProducts ? `<button class="action-btn" onclick="openProductDrawer('${p.id}')" title="Edit">
                     <i class="fa-solid fa-pen"></i>
-                </button>
-            </div>` : '';
+                </button>` : ''}
+            </div>`;
 
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
@@ -228,6 +234,46 @@ window.goPage = function (page) {
     currentPage = page;
     renderProductsTable();
     document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+/* ── Cost History Modal ── */
+function formatDate(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+window.openCostHistory = async function (productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('cost-history-title').textContent = `Cost History — ${product.name}`;
+
+    const { data, error } = await db
+        .from('stock_movements')
+        .select('quantity, quantity_remaining, unit_cost, created_at, suppliers(name)')
+        .eq('product_id', productId)
+        .eq('type', 'receive')
+        .order('created_at', { ascending: false });
+
+    if (error) { showToast('Failed to load cost history.', 'error'); return; }
+
+    const tbody = document.getElementById('cost-history-tbody');
+    tbody.innerHTML = !data.length
+        ? `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">No receive history yet</td></tr>`
+        : data.map(m => `
+            <tr>
+                <td>${formatDate(m.created_at)}</td>
+                <td>${m.suppliers?.name || '—'}</td>
+                <td style="font-weight:600;">${m.quantity.toLocaleString()}</td>
+                <td style="color:var(--text-muted);">${m.quantity_remaining?.toLocaleString() ?? '—'} left</td>
+                <td style="font-weight:700;">${formatCurrency(m.unit_cost)}</td>
+            </tr>`).join('');
+
+    document.getElementById('cost-history-modal').classList.add('show');
+};
+
+window.closeCostHistoryModal = function () {
+    document.getElementById('cost-history-modal').classList.remove('show');
 };
 
 /* ── Product Drawer ── */
@@ -619,6 +665,8 @@ document.addEventListener('keydown', function (e) {
         window.location.href = '../../index.html?denied=true';
         return;
     }
+
+    await initCurrency();
 
     userRole = window.currentUser.role;
     canEditProducts = can('products', 'edit', userRole);
