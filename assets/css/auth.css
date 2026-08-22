@@ -159,6 +159,7 @@
 .auth-right {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 48px 28px;
@@ -372,10 +373,21 @@
     }
 }
 
+.copyright {
+    display: none;
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .auth-left {
         display: none;
+    }
+
+    .copyright {
+        display: block;
     }
 }
 
