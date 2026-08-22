@@ -325,7 +325,7 @@ window.renderSidebar = async function (activePage, userRole) {
             .sidebar-user {
                 padding: 12px;
                 margin: 8px;
-                margin-bottom: calc(46px + env(safe-area-inset-bottom, 0px));
+                margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
                 background: rgba(255,255,255,0.05);
                 border: 1px solid rgba(255,255,255,0.08);
                 border-radius: 10px;
@@ -401,14 +401,18 @@ window.renderSidebar = async function (activePage, userRole) {
             @media (max-width: 768px) {
                 .sidebar {
                     position: fixed;
-                    top: 0; left: 0;
-                    height: 100vh;
+                    top: 0;
+                    left: 0;
+                    height: 100dvh;
                     transform: translateX(-100%);
                     z-index: 200;
                     box-shadow: 4px 0 24px rgba(0,0,0,0.3);
                 }
-                .sidebar.open { transform: translateX(0); }
-            }
+
+                .sidebar.open {
+                    transform: translateX(0);
+                }
+}
         `;
         document.head.appendChild(style);
     }
