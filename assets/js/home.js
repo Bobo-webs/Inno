@@ -67,18 +67,19 @@ async function loadDashboard() {
 
         /* ── 1. Products stats ── */
         const { data: products } = await db
-            .from('products_home_view')
-            .select('id, quantity, reorder_level, is_active, avg_unit_cost')
+            .from('products')
+            .select('id, quantity, reorder_level, is_active')
             .eq('is_active', true);
 
         const totalProducts = products?.length || 0;
         const lowStock = products?.filter(p => p.quantity > 0 && p.quantity <= p.reorder_level).length || 0;
         const outOfStock = products?.filter(p => p.quantity <= 0).length || 0;
 
-        const stockValue = products?.reduce((sum, p) => {
-            if (!p.quantity || p.quantity <= 0 || p.avg_unit_cost === null) return sum;
-            return sum + (p.quantity * p.avg_unit_cost);
-        }, 0) || 0;
+        const { data: valueRows } = await db
+            .from('stock_value_by_product')
+            .select('stock_value');
+
+        const stockValue = valueRows?.reduce((sum, r) => sum + (r.stock_value || 0), 0) || 0;
 
         document.getElementById('val-products').textContent = totalProducts.toLocaleString();
         document.getElementById('val-low-stock').textContent = lowStock.toLocaleString();

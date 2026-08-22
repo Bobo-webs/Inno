@@ -323,6 +323,10 @@ async function genValuation() {
 
     let data = allProducts.filter(p => !cat || p.category_id === cat);
 
+    const { data: valueRows } = await db.from('stock_value_by_product').select('product_id, stock_value');
+    const valueMap = {};
+    (valueRows || []).forEach(r => { valueMap[r.product_id] = r.stock_value; });
+
     /* Group by category */
     const groups = {};
     data.forEach(p => {
@@ -332,43 +336,41 @@ async function genValuation() {
     });
 
     currentData = data;
-    currentCols = ['Product', 'SKU', 'Category', 'Qty', 'Unit Cost', 'Total Value'];
+    currentCols = ['Product', 'SKU', 'Category', 'Qty', 'Stock Value'];
 
     let rows = '';
     let grandTotal = 0;
 
     Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([catName, items]) => {
-        const catTotal = items.reduce((s, p) => s + (p.quantity * (p.avg_unit_cost || 0)), 0);
+        const catTotal = items.reduce((s, p) => s + (valueMap[p.id] || 0), 0);
         grandTotal += catTotal;
 
         rows += `<tr>
-            <td colspan="6" style="font-size:11px;font-weight:700;color:var(--text-muted);
+            <td colspan="5" style="font-size:11px;font-weight:700;color:var(--text-muted);
                 text-transform:uppercase;letter-spacing:0.6px;background:var(--bg);
                 padding:8px 16px;">${catName}</td>
         </tr>`;
 
         items.forEach(p => {
-            const val = p.quantity * (p.avg_unit_cost || 0);
+            const val = valueMap[p.id] || 0;
             rows += `<tr>
                 <td style="font-weight:600;padding-left:28px;">${p.name}</td>
                 <td style="color:var(--text-muted);font-size:12px;">${p.sku || '—'}</td>
                 <td style="color:var(--text-muted);">${catName}</td>
                 <td style="font-weight:700;">${p.quantity.toLocaleString()}</td>
-                <td>${formatCurrency(p.avg_unit_cost || 0)}</td>
                 <td style="font-weight:700;">${formatCurrency(val)}</td>
             </tr>`;
         });
 
         rows += `<tr>
-            <td colspan="5" style="font-size:12px;font-weight:600;color:var(--text-secondary);
+            <td colspan="4" style="font-size:12px;font-weight:600;color:var(--text-secondary);
                 text-align:right;padding-right:8px;background:var(--bg);">${catName} subtotal</td>
             <td style="font-weight:800;background:var(--bg);">${formatCurrency(catTotal)}</td>
         </tr>`;
     });
 
-    /* Grand total row */
     rows += `<tr class="summary-row">
-        <td colspan="5" style="text-align:right;padding-right:8px;">Grand Total</td>
+        <td colspan="4" style="text-align:right;padding-right:8px;">Grand Total</td>
         <td>${formatCurrency(grandTotal)}</td>
     </tr>`;
 
@@ -498,8 +500,7 @@ window.exportReport = async function (format) {
         case 'valuation':
             exportRows = currentData.map(p => [
                 p.name, p.sku || '', p.categories?.name || '',
-                p.quantity, p.avg_unit_cost || 0,
-                (p.quantity * (p.avg_unit_cost || 0)).toFixed(2)
+                p.quantity, (valuationMap[p.id] || 0).toFixed(2)
             ]); break;
 
         case 'lowstock':
