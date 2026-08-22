@@ -45,7 +45,7 @@ window.toggleTheme = function () {
 async function loadMeta() {
     const [{ data: cats }, { data: prods }] = await Promise.all([
         db.from('categories').select('id, name').order('name'),
-        db.from('products').select('id, name, sku, quantity, reorder_level, avg_unit_cost, is_active, category_id, categories(name)').eq('is_active', true).order('name')
+        db.from('products').select('id, name, sku, quantity, reorder_level, is_active, category_id, categories(name)').eq('is_active', true).order('name')
     ]);
 
     allCategories = cats || [];
@@ -86,15 +86,6 @@ window.generateReport = async function (key) {
     currentData = [];
     currentCols = [];
 
-    const reportLabels = {
-        stock: 'Stock Report',
-        movement: 'Stock Movement Report',
-        po: 'Purchase Order Report',
-        supplier: 'Supplier Report',
-        valuation: 'Inventory Valuation Report',
-        lowstock: 'Low Stock Report'
-    };
-
     try {
         switch (key) {
             case 'stock': await genStock(); break;
@@ -104,7 +95,6 @@ window.generateReport = async function (key) {
             case 'valuation': await genValuation(); break;
             case 'lowstock': await genLowStock(); break;
         }
-        await logActivity('view', 'report', null, reportLabels[key], `${currentData.length} record(s) returned`);
     } catch (err) {
         showToast('Failed to generate report. Try again.', 'error');
         console.error(err);
