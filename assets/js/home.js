@@ -1,7 +1,7 @@
 /* ==== HOME.JS ==== */
 
 let movementChart = null;
-let currentPeriod = 7;
+let currentPeriod = 1;
 let realtimeChannel = null;
 
 /* ── Helpers ── */
@@ -242,7 +242,16 @@ function renderLowStockAlerts(items) {
 /* ── Load & render chart ── */
 async function loadChartData(days) {
     const to = new Date();
-    const from = new Date(Date.now() - days * 86400000);
+    let from;
+
+    if (days === 1) {
+        from = new Date();
+        from.setHours(0, 0, 0, 0); // start of today, local time
+    } else {
+        from = new Date();
+        from.setDate(from.getDate() - (days - 1));
+        from.setHours(0, 0, 0, 0);
+    }
 
     const label = days === 1 ? 'Today' : `Last ${days} days`;
     document.getElementById('chart-period-label').textContent = label;
@@ -250,7 +259,11 @@ async function loadChartData(days) {
     await loadChartDataByRange(from.toISOString(), to.toISOString(), days);
 }
 
+let chartRequestId = 0;
+
 async function loadChartDataByRange(fromISO, toISO, days = null) {
+    const requestId = ++chartRequestId;
+
     const { data: movements } = await db
         .from('stock_movements')
         .select('type, quantity, created_at')
@@ -258,29 +271,67 @@ async function loadChartDataByRange(fromISO, toISO, days = null) {
         .lte('created_at', toISO)
         .in('type', ['receive', 'in', 'out', 'purchase_order']);
 
-    /* Build day buckets between from and to */
+    if (requestId !== chartRequestId) return; // a newer chart request started while this one was in flight — discard
+
     const from = new Date(fromISO);
     const to = new Date(toISO);
-    const msDay = 86400000;
-    const numDays = Math.max(1, Math.floor((to - from) / msDay) + 1);
+
+    const startDay = new Date(from); startDay.setHours(0, 0, 0, 0);
+    const endDay = new Date(to); endDay.setHours(0, 0, 0, 0);
+    const spanDays = Math.round((endDay - startDay) / 86400000) + 1;
+
+    /* A single-day range can't show a trend with day-sized buckets — use hourly instead */
+    if (spanDays <= 1) {
+        renderHourlyChart(movements || [], startDay);
+        return;
+    }
+
+    function localDateKey(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
 
     const labels = [];
     const inData = [];
     const outData = [];
 
-    for (let i = 0; i < numDays; i++) {
-        const d = new Date(from.getTime() + i * msDay);
-        const dayStr = d.toISOString().split('T')[0];
+    for (let i = 0; i < spanDays; i++) {
+        const d = new Date(startDay);
+        d.setDate(d.getDate() + i);
+        const dayKey = localDateKey(d);
 
         labels.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
 
-        const dayMoves = (movements || []).filter(m => m.created_at.startsWith(dayStr));
+        const dayMoves = (movements || []).filter(m => localDateKey(new Date(m.created_at)) === dayKey);
         inData.push(dayMoves
             .filter(m => m.type === 'receive' || m.type === 'in')
             .reduce((s, m) => s + (m.quantity || 0), 0));
         outData.push(dayMoves
             .filter(m => m.type === 'out' || m.type === 'purchase_order')
             .reduce((s, m) => s + (m.quantity || 0), 0));
+    }
+
+    renderChart(labels, inData, outData);
+}
+
+function renderHourlyChart(movements, dayDate) {
+    const labels = [];
+    const inData = [];
+    const outData = [];
+
+    for (let h = 0; h < 24; h++) {
+        const hourLabel = h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`;
+        labels.push(hourLabel);
+
+        const hourMoves = movements.filter(m => {
+            const d = new Date(m.created_at);
+            return d.getFullYear() === dayDate.getFullYear() &&
+                d.getMonth() === dayDate.getMonth() &&
+                d.getDate() === dayDate.getDate() &&
+                d.getHours() === h;
+        });
+
+        inData.push(hourMoves.filter(m => m.type === 'receive' || m.type === 'in').reduce((s, m) => s + (m.quantity || 0), 0));
+        outData.push(hourMoves.filter(m => m.type === 'out' || m.type === 'purchase_order').reduce((s, m) => s + (m.quantity || 0), 0));
     }
 
     renderChart(labels, inData, outData);
