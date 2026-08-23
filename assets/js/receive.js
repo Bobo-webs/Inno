@@ -198,7 +198,7 @@ function renderHistoryTable() {
     tbody.innerHTML = paged.map((m, i) => {
         const totalVal = (m.quantity || 0) * (m.unit_cost || 0);
         const initials = getInitials(m.created_by_username || '');
-        const canAction = can('receive', 'viewAll', userRole) || m.created_by === window.currentUser?.id;
+        const canAction = ['root_admin', 'manager'].includes(userRole) || m.created_by === window.currentUser?.id;
         const isNew = window.pageLastSeen && m.created_by !== window.currentUser?.id &&
             new Date(m.created_at) > new Date(window.pageLastSeen);
         const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';

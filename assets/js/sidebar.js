@@ -59,7 +59,7 @@ const SIDEBAR_NAV = [
                 label: 'Purchase Orders',
                 icon: 'fa-solid fa-file-invoice',
                 href: 'dashboard/purchase-orders.html',
-                roles: ['root_admin', 'manager', 'staff', 'accountant']
+                roles: ['root_admin', 'manager', 'staff']
             },
             {
                 key: 'suppliers',

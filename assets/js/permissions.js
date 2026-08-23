@@ -2,8 +2,8 @@
 
 const PERMISSIONS = {
     products: {
-        create: ['root_admin', 'manager', 'accountant', 'warehouse_clerk'],
-        edit: ['root_admin', 'manager', 'accountant', 'warehouse_clerk'],
+        create: ['root_admin', 'manager', 'warehouse_clerk'],
+        edit: ['root_admin', 'manager', 'warehouse_clerk'],
         delete: []
     },
     categories: {
@@ -25,9 +25,9 @@ const PERMISSIONS = {
         viewAll: ['root_admin', 'manager', 'accountant', 'warehouse_clerk']
     },
     purchase_orders: {
-        create: ['root_admin', 'manager', 'accountant', 'staff'],
-        approve: ['root_admin', 'manager', 'accountant'],
-        viewAll: ['root_admin', 'manager', 'accountant']
+        create: ['root_admin', 'manager', 'staff'],
+        approve: ['root_admin', 'manager'],
+        viewAll: ['root_admin', 'manager']
     },
     adjustments: {
         create: ['root_admin', 'manager', 'accountant', 'staff', 'warehouse_clerk'],

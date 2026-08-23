@@ -6,7 +6,7 @@ const PAGE_ACCESS = {
     'receive': ['root_admin', 'manager', 'staff', 'warehouse_clerk'],
     'adjustments': ['root_admin', 'manager', 'accountant', 'staff', 'warehouse_clerk'],
     'history': ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk'],
-    'purchase-orders': ['root_admin', 'manager', 'staff', 'accountant'],
+    'purchase-orders': ['root_admin', 'manager', 'staff'],
     'suppliers': ['root_admin', 'manager', 'warehouse_clerk'],
     'reports': ['root_admin', 'manager', 'accountant'],
     'users': ['root_admin'],
