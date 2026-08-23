@@ -372,6 +372,14 @@
                 <div class="form-hint" id="qty-hint">Enter the number of units to add or remove</div>
             </div>
 
+            <div class="form-group" id="batch-select-group" style="display:none;">
+                <label class="form-label">Batch <span>*</span></label>
+                <select class="form-control" id="f-batch" onchange="updateNewStock()">
+                    <option value="">— Select batch —</option>
+                </select>
+                <div class="form-hint">Adjustments must be tied to a specific delivery batch</div>
+            </div>
+
             <div class="new-stock-preview" id="new-stock-preview">
                 <span class="nsp-label" id="nsp-label">New stock will be</span>
                 <span class="nsp-val" id="nsp-val">—</span>
@@ -429,7 +437,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../assets/js/toast.js"></script>
     <script src="../../assets/js/supabase.js"></script>
+    <script src="../../assets/js/currency.js"></script>
     <script src="../../assets/js/auth-guard.js"></script>
+    <script src="../../assets/js/permissions.js"></script>
     <script src="../../assets/js/sidebar.js"></script>
     <script src="../../assets/js/logger.js"></script>
     <script src="../../assets/js/adjustments.js"></script>

@@ -30,7 +30,8 @@ const PERMISSIONS = {
         viewAll: ['root_admin', 'manager', 'accountant']
     },
     adjustments: {
-        create: ['root_admin', 'manager']
+        create: ['root_admin', 'manager', 'accountant', 'staff', 'warehouse_clerk'],
+        viewAll: ['root_admin', 'manager', 'accountant', 'warehouse_clerk']
     },
     financial_data: {
         view: ['root_admin', 'manager', 'accountant']

@@ -32,14 +32,12 @@ async function loadSettings() {
 
     document.getElementById('s-currency-code').value = data.currency_code || 'USD';
     document.getElementById('s-currency-position').value = data.currency_position || 'before';
-    document.getElementById('s-low-stock-default').value = data.low_stock_default ?? 10;
     document.getElementById('s-allow-negative').checked = data.allow_negative_stock || false;
     document.getElementById('s-require-adj-notes').checked = data.require_adjustment_notes || false;
 
     originalValues = {
         currency_code: data.currency_code || 'USD',
         currency_position: data.currency_position || 'before',
-        low_stock_default: data.low_stock_default ?? 10,
         allow_negative_stock: data.allow_negative_stock || false,
         require_adjustment_notes: data.require_adjustment_notes || false
     };
@@ -60,7 +58,6 @@ window.saveSection = async function (section) {
     const newValues = {
         currency_code: document.getElementById('s-currency-code').value,
         currency_position: document.getElementById('s-currency-position').value,
-        low_stock_default: parseInt(document.getElementById('s-low-stock-default').value) || 0,
         allow_negative_stock: document.getElementById('s-allow-negative').checked,
         require_adjustment_notes: document.getElementById('s-require-adj-notes').checked
     };
@@ -82,7 +79,6 @@ window.saveSection = async function (section) {
     const changes = [];
     if (originalValues.currency_code !== newValues.currency_code) changes.push(`Currency: ${originalValues.currency_code} → ${newValues.currency_code}`);
     if (originalValues.currency_position !== newValues.currency_position) changes.push(`Currency position: ${originalValues.currency_position} → ${newValues.currency_position}`);
-    if (originalValues.low_stock_default !== newValues.low_stock_default) changes.push(`Default reorder level: ${originalValues.low_stock_default} → ${newValues.low_stock_default}`);
     if (originalValues.allow_negative_stock !== newValues.allow_negative_stock) changes.push(`Allow negative stock: ${originalValues.allow_negative_stock} → ${newValues.allow_negative_stock}`);
     if (originalValues.require_adjustment_notes !== newValues.require_adjustment_notes) changes.push(`Require adjustment notes: ${originalValues.require_adjustment_notes} → ${newValues.require_adjustment_notes}`);
 

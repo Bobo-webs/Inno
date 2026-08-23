@@ -40,7 +40,7 @@ const SIDEBAR_NAV = [
                 label: 'Adjustments',
                 icon: 'fa-solid fa-sliders',
                 href: 'dashboard/stock/adjustments.html',
-                roles: ['root_admin', 'manager']
+                roles: ['root_admin', 'manager', 'accountant', 'staff', 'warehouse_clerk']
             },
             {
                 key: 'history',

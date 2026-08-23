@@ -12,7 +12,7 @@ let _currencyReady = false;
 
 window.initCurrency = async function () {
     if (!window.appSettings) {
-        const { data } = await db.from('settings').select('currency_code, currency_position').single();
+        const { data } = await db.from('settings').select('currency_code, currency_position').limit(1).maybeSingle();
         window.appSettings = data || { currency_code: 'USD', currency_position: 'before' };
     }
 

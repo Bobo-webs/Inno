@@ -4,7 +4,7 @@ const PAGE_ACCESS = {
     'home': ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk'],
     'products': ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk'],
     'receive': ['root_admin', 'manager', 'staff', 'warehouse_clerk'],
-    'adjustments': ['root_admin', 'manager'],
+    'adjustments': ['root_admin', 'manager', 'accountant', 'staff', 'warehouse_clerk'],
     'history': ['root_admin', 'manager', 'staff', 'accountant', 'warehouse_clerk'],
     'purchase-orders': ['root_admin', 'manager', 'staff', 'accountant'],
     'suppliers': ['root_admin', 'manager', 'warehouse_clerk'],

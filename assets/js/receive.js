@@ -322,6 +322,12 @@ window.openReceiveDrawer = function () {
     document.getElementById('receive-drawer').classList.add('open');
     document.body.style.overflow = 'hidden';
     setTimeout(() => document.getElementById('product-select').focus(), 300);
+
+    document.getElementById('product-select').closest('.form-group').style.display = 'block';
+    const qtyInput = document.getElementById('qty-input');
+    qtyInput.disabled = false;
+    qtyInput.style.opacity = '';
+    qtyInput.style.cursor = '';
 };
 
 window.closeReceiveDrawer = function () {
@@ -439,6 +445,9 @@ window.editEntry = function (movementId) {
         `Editing: ${entry.products?.name} · ${formatDate(entry.created_at)}`;
     document.getElementById('submit-label').textContent = 'Update Entry';
 
+    /* Product dropdown removed entirely in edit mode — preview card only */
+    document.getElementById('product-select').closest('.form-group').style.display = 'none';
+
     document.getElementById('product-select').value = entry.products?.id || '';
     document.getElementById('supplier-select').value =
         allSuppliers.find(s => s.name === entry.suppliers?.name)?.id || '';
@@ -448,6 +457,12 @@ window.editEntry = function (movementId) {
         ? new Date(new Date(entry.created_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
         : new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('notes-input').value = entry.notes || '';
+
+    /* Quantity visible but not editable — supplier, cost, date, notes stay editable */
+    const qtyInput = document.getElementById('qty-input');
+    qtyInput.disabled = true;
+    qtyInput.style.opacity = '0.5';
+    qtyInput.style.cursor = 'not-allowed';
 
     onProductSelect();
     updateTotal();

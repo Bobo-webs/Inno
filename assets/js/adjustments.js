@@ -57,8 +57,37 @@ window.selectType = function (type) {
     addEl.className = 'type-option' + (type === 'add' ? ' selected-add' : '');
     removeEl.className = 'type-option' + (type === 'remove' ? ' selected-remove' : '');
 
+    document.getElementById('batch-select-group').style.display = 'block';
+    loadBatchesForProduct(document.getElementById('f-product').value, null, type);
     updateNewStock();
 };
+
+async function loadBatchesForProduct(productId, preselectId = null, type = 'remove') {
+    const select = document.getElementById('f-batch');
+    const placeholder = '— Select batch —';
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    if (!productId) return;
+
+    let query = db
+        .from('stock_movements')
+        .select('id, quantity_remaining, unit_cost, created_at, suppliers(name)')
+        .eq('product_id', productId)
+        .eq('type', 'receive')
+        .order('created_at', { ascending: true });
+
+    /* "Remove" can only draw from batches that still have stock; "Add" can credit any past batch */
+    if (type === 'remove') query = query.gt('quantity_remaining', 0);
+
+    const { data, error } = await query;
+    if (error) { showToast('Failed to load batches.', 'error'); return; }
+
+    select.innerHTML = `<option value="">${placeholder}</option>` +
+        (data || []).map(b => `<option value="${b.id}" data-remaining="${b.quantity_remaining}">
+            ${formatDate(b.created_at)} — ${b.suppliers?.name || 'Unknown supplier'} — ${b.quantity_remaining} left @ ${formatCurrency(b.unit_cost)}
+        </option>`).join('');
+
+    if (preselectId) select.value = preselectId;
+}
 
 /* ── Load products ── */
 async function loadProducts() {
@@ -81,16 +110,20 @@ async function loadProducts() {
 
 /* ── Load adjustments ── */
 async function loadAdjustments() {
-    const { data, error } = await db
+    let query = db
         .from('stock_movements')
         .select(`
-            id, quantity, reason, notes, created_at, created_by, created_by_username,
-            adj_type:notes,
+            id, quantity, reason, notes, created_at, created_by, created_by_username, source_movement_id,
             products(id, name, sku)
         `)
         .eq('type', 'adjustment')
         .order('created_at', { ascending: false });
 
+    if (!can('adjustments', 'viewAll', userRole)) {
+        query = query.eq('created_by', window.currentUser.id);
+    }
+
+    const { data, error } = await query;
     if (error) { showToast('Failed to load adjustments.', 'error'); return; }
 
     allAdjustments = data || [];
@@ -191,6 +224,16 @@ function renderTable() {
             ? `<span style="color:var(--success);font-weight:700;">+${formatNum(absQty)}</span>`
             : `<span style="color:var(--danger);font-weight:700;">−${formatNum(absQty)}</span>`;
 
+        const isOwner = a.created_by === window.currentUser?.id;
+        const canEdit = isOwner || ['root_admin', 'manager'].includes(userRole);
+        const editBtn = canEdit
+            ? `<button class="action-btn" onclick="editAdjustment('${a.id}')" title="Edit">
+                    <i class="fa-solid fa-pen"></i>
+               </button>`
+            : `<button class="action-btn" style="opacity:0.3;filter:blur(0.4px);cursor:not-allowed;" disabled title="You can only edit your own entries">
+                    <i class="fa-solid fa-pen"></i>
+               </button>`;
+
         return `
             <tr class="fade-in" style="animation-delay:${i * 0.03}s">
                 <td>
@@ -211,9 +254,7 @@ function renderTable() {
                 </td>
                 <td>
                     <div class="action-btns">
-                        <button class="action-btn" onclick="editAdjustment('${a.id}')" title="Edit">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                        ${editBtn}
                     </div>
                 </td>
             </tr>`;
@@ -274,6 +315,8 @@ window.onProductChange = function () {
     else if (product.quantity <= product.reorder_level) qtyEl.classList.add('low');
 
     preview.classList.add('show');
+
+    if (selectedType) loadBatchesForProduct(productId, null, selectedType);
     updateNewStock();
 };
 
@@ -288,6 +331,19 @@ window.updateNewStock = function () {
 
     if (!productId || !qty || !type) { preview.classList.remove('show', 'add', 'remove'); return; }
 
+    if (type === 'remove') {
+        const batchSelect = document.getElementById('f-batch');
+        const selected = batchSelect.options[batchSelect.selectedIndex];
+        const remaining = parseInt(selected?.dataset.remaining) || 0;
+        if (batchSelect.value && qty > remaining) {
+            preview.className = 'new-stock-preview show remove';
+            label.textContent = 'Exceeds batch';
+            val.textContent = `Only ${remaining} left in this batch`;
+            val.style.color = 'var(--danger)';
+            return;
+        }
+    }
+
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
 
@@ -297,12 +353,7 @@ window.updateNewStock = function () {
     val.className = `nsp-val ${type}`;
     label.textContent = type === 'add' ? 'New stock will be' : 'Stock will become';
     val.textContent = newQty < 0 ? 'Would go negative!' : formatNum(newQty) + ' units';
-
-    if (newQty < 0) {
-        val.style.color = 'var(--danger)';
-    } else {
-        val.style.color = '';
-    }
+    val.style.color = newQty < 0 ? 'var(--danger)' : '';
 };
 
 /* ── Drawer ── */
@@ -338,7 +389,7 @@ window.closeDrawer = function () {
 };
 
 /* ── Edit adjustment ── */
-window.editAdjustment = function (id) {
+window.editAdjustment = async function (id) {
     const entry = allAdjustments.find(a => a.id === id);
     if (!entry) return;
 
@@ -356,6 +407,9 @@ window.editAdjustment = function (id) {
     document.getElementById('f-notes').value = entry.notes || '';
 
     onProductChange();
+
+    await loadBatchesForProduct(entry.products?.id, entry.source_movement_id, type);
+
     updateNewStock();
 };
 
@@ -368,28 +422,24 @@ window.saveAdjustment = async function () {
     const reason = document.getElementById('f-reason').value;
     const dateVal = document.getElementById('f-date').value;
     const notes = document.getElementById('f-notes').value.trim();
+    const batchId = document.getElementById('f-batch').value || null;
+
+    if (!batchId) {
+        showToast('Please select a batch — corrections with no source batch belong on Receive Stock.', 'error');
+        return;
+    }
     const btn = document.getElementById('save-btn');
 
-    /* Validate */
     if (!type) { showToast('Please select an adjustment type.', 'error'); return; }
     if (!productId) { showToast('Please select a product.', 'error'); return; }
     if (qty <= 0) { showToast('Quantity must be greater than zero.', 'error'); return; }
     if (!reason) { showToast('Please select a reason.', 'error'); return; }
     if (!dateVal) { showToast('Please enter a date.', 'error'); return; }
-
-    /* Check stock won't go negative for remove */
-    if (type === 'remove') {
-        const product = allProducts.find(p => p.id === productId);
-        if (product && product.quantity - qty < 0) {
-            showToast(`Cannot remove ${qty} units — only ${product.quantity} in stock.`, 'error');
-            return;
-        }
-    }
+    if (type === 'remove' && !batchId) { showToast('Please select which batch this removes from.', 'error'); return; }
 
     btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
 
-    /* Signed quantity — negative for remove */
     const signedQty = type === 'add' ? qty : -qty;
     const user = window.currentUser;
     const dateISO = editId ? new Date(dateVal).toISOString() : new Date().toISOString();
@@ -397,66 +447,37 @@ window.saveAdjustment = async function () {
     let error;
 
     if (editId) {
-        /* ── Edit: reverse old, apply new atomically ── */
         const old = allAdjustments.find(a => a.id === editId);
-        const oldQty = old?.quantity || 0;
-        const diff = signedQty - oldQty;
+        const { data, error: rpcErr } = await db.rpc('edit_adjustment_delta', {
+            p_product_id: productId,
+            p_old_batch_id: old?.source_movement_id || null,
+            p_old_diff: old?.quantity || 0,
+            p_new_batch_id: batchId,
+            p_new_diff: signedQty
+        });
+        error = rpcErr || (data?.error ? { message: data.error } : null);
 
-        /* Update movement record */
-        const { error: moveErr } = await db
-            .from('stock_movements')
-            .update({
-                quantity: signedQty,
-                reason,
-                notes: notes || null,
-                created_at: dateISO,
-                created_by_username: user.username
-            })
-            .eq('id', editId);
-
-        if (moveErr) { error = moveErr; }
-        else {
-            /* Atomically adjust product quantity by the diff */
-            const { error: prodErr } = await db
-                .from('products')
-                .update({
-                    quantity: db.rpc ? undefined : undefined,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', productId);
-
-            /* Use raw SQL increment via rpc */
-            const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
-                p_product_id: productId,
-                p_diff: diff
-            });
-
-            error = rpcErr;
+        if (!error) {
+            const { error: moveErr } = await db.from('stock_movements').update({
+                quantity: signedQty, reason, notes: notes || null,
+                created_at: dateISO, created_by_username: user.username,
+                source_movement_id: batchId
+            }).eq('id', editId);
+            error = moveErr;
         }
     } else {
-        /* ── New adjustment ── */
-        /* Insert movement */
-        const { error: moveErr } = await db
-            .from('stock_movements')
-            .insert({
-                product_id: productId,
-                type: 'adjustment',
-                quantity: signedQty,
-                reason,
-                notes: notes || null,
-                created_by: user.id,
-                created_by_username: user.username,
-                created_at: dateISO
-            });
+        const { data: inserted, error: insErr } = await db.from('stock_movements').insert({
+            product_id: productId, type: 'adjustment', quantity: signedQty,
+            reason, notes: notes || null, created_by: user.id, created_by_username: user.username,
+            created_at: dateISO, source_movement_id: batchId
+        }).select('id').single();
 
-        if (moveErr) { error = moveErr; }
+        if (insErr) { error = insErr; }
         else {
-            /* Atomically update product quantity */
-            const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
-                p_product_id: productId,
-                p_diff: signedQty
+            const { data, error: rpcErr } = await db.rpc('apply_adjustment_delta', {
+                p_batch_id: batchId, p_product_id: productId, p_diff: signedQty
             });
-            error = rpcErr;
+            error = rpcErr || (data?.error ? { message: data.error } : null);
         }
     }
 
@@ -470,17 +491,10 @@ window.saveAdjustment = async function () {
     const productName = allProducts.find(p => p.id === productId)?.name || productId;
 
     if (editId) {
-        const original = allAdjustments.find(a => a.id === editId);
-        const changes = [];
-        const oldType = original.quantity > 0 ? 'add' : 'remove';
-        if (oldType !== type) changes.push(`Type: ${oldType} → ${type}`);
-        if (Math.abs(original.quantity) !== qty) changes.push(`Qty: ${Math.abs(original.quantity)} → ${qty}`);
-        if (original.reason !== reason) changes.push(`Reason: "${original.reason}" → "${reason}"`);
-        await logActivity('edit', 'adjustment', editId, productName, changes.length ? changes.join(' · ') : 'No changes detected');
+        await logActivity('edit', 'adjustment', editId, productName, `Updated adjustment: ${type} ${qty} units`);
     } else {
         await logActivity('adjust', 'product', productId, productName,
-            `${type === 'add' ? '+' : '-'}${qty} · Reason: ${reason}${notes ? ' · Notes: ' + notes : ''}`
-        );
+            `${type === 'add' ? '+' : '-'}${qty} · Reason: ${reason}${notes ? ' · Notes: ' + notes : ''}`);
     }
 
     showToast(editId ? 'Adjustment updated.' : 'Adjustment recorded successfully.', 'success');
@@ -516,25 +530,20 @@ window.confirmDelete = async function () {
     const entry = allAdjustments.find(a => a.id === deleteTargetId);
     if (!entry) { closeDeleteModal(); return; }
 
-    /* Reverse the quantity change */
-    const { error: rpcErr } = await db.rpc('adjust_stock_quantity', {
+    const { data, error: rpcErr } = await db.rpc('apply_adjustment_delta', {
+        p_batch_id: entry.source_movement_id || null,
         p_product_id: entry.products?.id,
         p_diff: -entry.quantity
     });
 
-    if (rpcErr) {
-        showToast(rpcErr.message || 'Failed to reverse adjustment.', 'error');
+    if (rpcErr || data?.error) {
+        showToast((data?.error) || rpcErr?.message || 'Failed to reverse adjustment.', 'error');
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Undo Adjustment';
         return;
     }
 
-    /* Delete the movement record */
-    const { error: delErr } = await db
-        .from('stock_movements')
-        .delete()
-        .eq('id', deleteTargetId);
-
+    const { error: delErr } = await db.from('stock_movements').delete().eq('id', deleteTargetId);
     if (delErr) {
         showToast('Reversed quantity but failed to remove record. Contact admin.', 'error');
         btn.disabled = false;
@@ -542,11 +551,8 @@ window.confirmDelete = async function () {
         return;
     }
 
-    await logActivity(
-        'delete', 'adjustment', deleteTargetId,
-        entry.products?.name || '—',
-        `Undone: ${entry.quantity > 0 ? '+' : ''}${entry.quantity} · Reason was: ${entry.reason || '—'}`
-    );
+    await logActivity('delete', 'adjustment', deleteTargetId, entry.products?.name || '—',
+        `Undone: ${entry.quantity > 0 ? '+' : ''}${entry.quantity} · Reason was: ${entry.reason || '—'}`);
 
     showToast('Adjustment undone successfully.', 'success');
     closeDeleteModal();
@@ -602,6 +608,7 @@ document.addEventListener('keydown', function (e) {
         return;
     }
 
+    await initCurrency();
     userRole = window.currentUser.role;
 
     /* Topbar */
