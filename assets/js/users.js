@@ -29,14 +29,14 @@ const ROLES = [
     {
         key: 'accountant',
         label: 'Accountant',
-        desc: 'Create POs, receive stock, approve, view financials',
+        desc: 'View-only products, adjustments, financials — no POs or receiving',
         icon: 'fa-solid fa-calculator',
         color: '#0d9488', bg: '#f0fdfa'
     },
     {
         key: 'warehouse_clerk',
         label: 'Warehouse Clerk',
-        desc: 'Receive stock, manage products/catalogues, view & add suppliers — own records only',
+        desc: 'Receive stock, manage products/catalogues, add suppliers — can edit own records only',
         icon: 'fa-solid fa-warehouse',
         color: '#d97706', bg: '#fffbeb'
     },
