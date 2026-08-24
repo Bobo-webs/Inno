@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifying Email</title>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase.js"></script>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Poppins',sans-serif;">
+    <div style="text-align:center;max-width:360px;padding:32px;">
+        <div id="v-icon" style="font-size:40px;margin-bottom:16px;">⏳</div>
+        <h2 id="v-title">Verifying your email...</h2>
+        <p id="v-message" style="color:#64748b;margin:12px 0 24px;">Please wait a moment.</p>
+        <a href="../index.html" id="v-btn" style="display:none;padding:11px 24px;background:#1d4ed8;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Go to Sign In</a>
+    </div>
+
+    <script>
+        (async function () {
+            const params = new URLSearchParams(window.location.search);
+            const token_hash = params.get('token_hash');
+            const type = params.get('type') || 'email';
+
+            if (!token_hash) {
+                document.getElementById('v-icon').textContent = '❌';
+                document.getElementById('v-title').textContent = 'Invalid verification link';
+                document.getElementById('v-message').textContent = 'This link is missing required information.';
+                document.getElementById('v-btn').style.display = 'inline-block';
+                return;
+            }
+
+            const { error } = await db.auth.verifyOtp({ token_hash, type });
+
+            if (error) {
+                document.getElementById('v-icon').textContent = '❌';
+                document.getElementById('v-title').textContent = 'Verification failed';
+                document.getElementById('v-message').textContent = 'This link may have expired. Please try signing up again or contact an admin.';
+            } else {
+                await db.auth.signOut(); // don't auto-login — they still need role assignment
+                document.getElementById('v-icon').textContent = '✅';
+                document.getElementById('v-title').textContent = 'Email verified!';
+                document.getElementById('v-message').textContent = 'You can now sign in. An admin will assign your role if they haven\'t already.';
+            }
+
+            document.getElementById('v-btn').style.display = 'inline-block';
+        })();
+    </script>
+</body>
+</html>
