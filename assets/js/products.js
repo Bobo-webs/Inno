@@ -171,10 +171,9 @@ function renderProductsTable() {
         const isNew = window.pageLastSeen && p.created_by !== window.currentUser.id &&
             new Date(p.created_at) > new Date(window.pageLastSeen);
         const newBadge = isNew ? '<span class="row-new-badge">NEW</span>' : '';
-        const costBtn = can('financial_data', 'view', userRole)
-            ? `<button class="action-btn" onclick="openCostHistory('${p.id}')" title="Cost History">
+        const costBtn = `<button class="action-btn" onclick="openCostHistory('${p.id}')" title="Cost History">
                 <i class="fa-solid fa-clock-rotate-left"></i>
-            </button>` : '';
+            </button>`;
 
         const actions = `
             <div class="action-btns">
