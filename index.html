@@ -767,11 +767,6 @@
 
         };
 
-
-        /* =========================================================
-           SIGN UP
-           ========================================================= */
-
         window.handleSignUp = async function () {
 
             const fullName =
@@ -839,6 +834,12 @@
                 return;
             }
 
+            const { data: usernameTaken } = await db.rpc('username_exists', { check_username: username });
+            if (usernameTaken) {
+                showToast('Username already taken. Please choose another.', 'error');
+                return;
+            }
+
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 
@@ -898,6 +899,8 @@
 
             /* =====================================================
                SUPABASE SIGN UP
+               Profile row is created automatically server-side via
+               a database trigger on auth.users — no client insert needed.
                ===================================================== */
 
             const { data, error } =
@@ -922,69 +925,11 @@
 
             if (error) {
 
-                showToast(
-                    error.message ||
-                    'Sign up failed. Please try again.',
-                    'error'
-                );
+                const msg = /duplicate|already registered|already exists/i.test(error.message || '')
+                    ? 'That email or username is already in use.'
+                    : (error.message || 'Sign up failed. Please try again.');
 
-
-                signupTurnstileToken = null;
-
-                if (signupTurnstileWidget !== null) {
-                    turnstile.reset(signupTurnstileWidget);
-                }
-
-
-                btn.disabled = false;
-
-                btn.innerHTML =
-                    '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
-
-                return;
-            }
-
-
-            /* =====================================================
-               CREATE USER PROFILE
-               ===================================================== */
-
-            const { error: insertError } =
-                await db
-                    .from('users')
-                    .insert({
-
-                        id: data.user.id,
-                        full_name: fullName,
-                        username: username,
-                        email: email,
-                        role: 'guest',
-                        is_active: true,
-                        created_at: new Date().toISOString()
-                    });
-
-
-            /* ── Profile creation failed ── */
-
-            if (insertError) {
-
-                await db.auth.signOut();
-
-
-                if (insertError.code === '23505') {
-
-                    showToast(
-                        'Username already taken. Please choose another.',
-                        'error'
-                    );
-
-                } else {
-
-                    showToast(
-                        'Account creation failed. Please try again.',
-                        'error'
-                    );
-                }
+                showToast(msg, 'error');
 
 
                 signupTurnstileToken = null;
