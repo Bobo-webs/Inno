@@ -75,6 +75,7 @@ const PAGE_ACCESS = {
     });
 
     document.documentElement.classList.add('auth-ok');
+    window.dispatchEvent(new CustomEvent('inno-auth-ready'));
 
     db.auth.onAuthStateChange((event, newSession) => {
         if (event === 'SIGNED_OUT' || !newSession) {

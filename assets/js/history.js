@@ -368,15 +368,10 @@ window.exportHistory = function () {
 
 /* ══════ INIT ══════ */
 (async function init() {
-    let waited = 0;
-    while (!window.currentUser && waited < 5000) {
-        await new Promise(r => setTimeout(r, 50));
-        waited += 50;
-    }
-    if (!window.currentUser) {
-        window.location.href = '../../index.html?denied=true';
-        return;
-    }
+    await new Promise(resolve => {
+        if (window.currentUser) { resolve(); return; }
+        window.addEventListener('inno-auth-ready', resolve, { once: true });
+    });
 
     userRole = window.currentUser.role;
 
