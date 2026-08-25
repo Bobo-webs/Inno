@@ -93,8 +93,8 @@
   <!-- ===== AUTH LOADER ===== -->
   <div id="auth-loader">
     <div id="auth-loader-badge">
-            <img class="logo" src="../../assets/images/logo.png" alt="Logo">
-        </div>
+      <img class="logo" src="../../assets/images/logo.png" alt="Logo">
+    </div>
     <div id="auth-loader-text">Loading...</div>
   </div>
 
@@ -411,6 +411,12 @@
           <div class="form-hint">Alert triggers when qty reaches this level</div>
         </div>
       </div>
+      <div class="form-group" id="product-initial-cost-group" style="display:none;">
+        <label class="form-label">Initial Stock Unit Cost <span>*</span></label>
+        <input type="number" class="form-control" id="product-initial-cost" placeholder="0.00" min="0" step="0.01">
+        <div class="form-hint">Required whenever you set a starting quantity - this becomes the product's first cost
+          batch</div>
+      </div>
     </div>
     <div class="drawer-footer">
       <button class="btn btn-outline" onclick="closeProductDrawer()">Cancel</button>
@@ -474,18 +480,26 @@
   <!-- ══ COST HISTORY MODAL ══ -->
   <div class="modal-backdrop" id="cost-history-modal">
     <div class="modal" style="max-width:520px;">
-        <h3 id="cost-history-title">Cost History</h3>
-        <div class="table-wrap" style="margin:16px 0;max-height:340px;overflow-y:auto;">
-            <table>
-                <thead><tr><th>Date</th><th>Supplier</th><th>Qty Received</th><th>Remaining</th><th>Unit Cost</th></tr></thead>
-                <tbody id="cost-history-tbody"></tbody>
-            </table>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeCostHistoryModal()">Close</button>
-        </div>
+      <h3 id="cost-history-title">Cost History</h3>
+      <div class="table-wrap" style="margin:16px 0;max-height:340px;overflow-y:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Supplier</th>
+              <th>Qty Received</th>
+              <th>Remaining</th>
+              <th>Unit Cost</th>
+            </tr>
+          </thead>
+          <tbody id="cost-history-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeCostHistoryModal()">Close</button>
+      </div>
     </div>
-</div>
+  </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -289,6 +289,8 @@ window.openProductDrawer = async function (productId = null) {
     const qtyInput = document.getElementById('product-qty');
     const qtyHint = document.getElementById('product-qty-hint');
 
+    const costGroup = document.getElementById('product-initial-cost-group');
+
     if (productId) {
         const product = allProducts.find(p => p.id === productId);
         if (product) {
@@ -302,13 +304,15 @@ window.openProductDrawer = async function (productId = null) {
         }
         qtyInput.disabled = true;
         if (qtyHint) qtyHint.style.display = 'block';
+        costGroup.style.display = 'none';
     } else {
         /* Clear form */
         ['product-name', 'product-sku', 'product-desc', 'product-category',
-            'product-unit', 'product-qty', 'product-reorder']
+            'product-unit', 'product-qty', 'product-reorder', 'product-initial-cost']
             .forEach(id => { document.getElementById(id).value = ''; });
         qtyInput.disabled = false;
         if (qtyHint) qtyHint.style.display = 'none';
+        costGroup.style.display = 'block';
     }
 
     document.getElementById('product-drawer-backdrop').classList.add('show');
@@ -332,6 +336,7 @@ window.saveProduct = async function () {
     const unit = document.getElementById('product-unit').value;
     const qty = parseInt(document.getElementById('product-qty').value) || 0;
     const reorder = parseInt(document.getElementById('product-reorder').value) || 0;
+    const initialCost = parseFloat(document.getElementById('product-initial-cost').value);
     const btn = document.getElementById('product-save-btn');
 
     if (!name) { showToast('Product name is required.', 'error'); return; }
@@ -339,6 +344,10 @@ window.saveProduct = async function () {
     if (!catId) { showToast('Please select a catalogue.', 'error'); return; }
     if (!unit) { showToast('Please select a unit of measurement.', 'error'); return; }
     if (qty < 0) { showToast('Quantity cannot be negative.', 'error'); return; }
+    if (!id && qty > 0 && (isNaN(initialCost) || initialCost < 0)) {
+        showToast('Please enter a valid unit cost for the initial quantity.', 'error');
+        return;
+    }
 
     btn.disabled = true;
     btn.innerHTML = '<div class="btn-spinner"></div><span>Saving...</span>';
@@ -353,10 +362,8 @@ window.saveProduct = async function () {
     let insertedId = null;
 
     if (id) {
-        /* Update */
         ({ error } = await db.from('products').update(payload).eq('id', id));
     } else {
-        /* Insert */
         payload.quantity = qty;
         payload.is_active = true;
         payload.created_by = window.currentUser.id;
@@ -367,6 +374,25 @@ window.saveProduct = async function () {
             .single();
         error = insertErr;
         insertedId = inserted?.id;
+
+        /* Create the real cost batch backing this initial quantity — no phantom stock */
+        if (!error && insertedId && qty > 0) {
+            const { error: batchErr } = await db.from('stock_movements').insert({
+                product_id: insertedId,
+                type: 'receive',
+                quantity: qty,
+                quantity_remaining: qty,
+                unit_cost: initialCost,
+                supplier_id: null,
+                notes: 'Initial stock on product creation',
+                created_by: window.currentUser.id,
+                created_by_username: window.currentUser.username,
+                created_at: new Date().toISOString()
+            });
+            if (batchErr) {
+                showToast('Product created, but failed to record initial cost batch. Use Receive Stock to add it manually.', 'error');
+            }
+        }
     }
 
     if (error) {
@@ -386,7 +412,7 @@ window.saveProduct = async function () {
         if (original.reorder_level !== reorder) changes.push(`Reorder Level: ${original.reorder_level} → ${reorder}`);
         await logActivity('edit', 'product', id, name, changes.length ? changes.join(' · ') : 'No changes detected');
     } else {
-        await logActivity('create', 'product', insertedId, name, `Category: ${allCategories.find(c => c.id === catId)?.name || '—'} · Unit: ${unit} · Initial Qty: ${qty}`);
+        await logActivity('create', 'product', insertedId, name, `Category: ${allCategories.find(c => c.id === catId)?.name || '—'} · Unit: ${unit} · Initial Qty: ${qty}${qty > 0 ? ' @ ' + formatCurrency(initialCost) : ''}`);
     }
     showToast(id ? 'Product updated successfully.' : 'Product added successfully.', 'success');
     closeProductDrawer();
