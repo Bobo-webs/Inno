@@ -473,8 +473,6 @@
                 activate your account — don't forget to check your spam or junk folder if it doesn't arrive shortly.</p>
             <div class="modal-actions" style="flex-direction:column;gap:10px;">
                 <button class="btn btn-primary w-100" onclick="closeVerifyModal()">Got it</button>
-                <button class="btn btn-outline w-100" id="resend-verify-btn" onclick="resendVerification()">Resend
-                    email</button>
             </div>
         </div>
     </div>
@@ -839,38 +837,9 @@
 
         };
 
-        let pendingVerifyEmail = '';
-        let resendCooldownActive = false;
-
         window.closeVerifyModal = function () {
             document.getElementById('verify-modal').classList.remove('show');
             switchTab('signin');
-        };
-
-        window.resendVerification = async function () {
-            if (resendCooldownActive || !pendingVerifyEmail) return;
-            const btn = document.getElementById('resend-verify-btn');
-
-            const { error } = await db.auth.resend({ type: 'signup', email: pendingVerifyEmail });
-            if (error) {
-                showToast(error.message || 'Failed to resend. Try again shortly.', 'error');
-                return;
-            }
-
-            showToast('Verification email resent.', 'success');
-            resendCooldownActive = true;
-            let seconds = 60;
-            btn.disabled = true;
-            const tick = setInterval(() => {
-                btn.textContent = `Resend email (${seconds}s)`;
-                seconds--;
-                if (seconds < 0) {
-                    clearInterval(tick);
-                    btn.disabled = false;
-                    btn.textContent = 'Resend email';
-                    resendCooldownActive = false;
-                }
-            }, 1000);
         };
 
         window.handleSignUp = async function () {
@@ -1074,7 +1043,6 @@
 
 
             /* Show verification modal instead of a toast + immediate tab switch */
-            pendingVerifyEmail = email;
             document.getElementById('verify-modal-email').textContent = email;
             document.getElementById('verify-modal').classList.add('show');
 
