@@ -405,17 +405,17 @@
           <label class="form-label">Initial Quantity <span>*</span></label>
           <input type="number" class="form-control" id="product-qty" placeholder="0" min="0">
         </div>
-        <div class="form-group">
-          <label class="form-label">Reorder Level <span>*</span></label>
-          <input type="number" class="form-control" id="product-reorder" placeholder="0" min="0">
-          <div class="form-hint">Alert triggers when qty reaches this level</div>
+        <div class="form-group" id="product-initial-cost-group" style="display:none;">
+          <label class="form-label">Initial Stock Unit Cost ($) <span>*</span></label>
+          <input type="number" class="form-control" id="product-initial-cost" placeholder="0.00" min="0" step="0.01">
+          <div class="form-hint">Required when setting the initial quantity; this becomes the product’s initial cost.
+          </div>
         </div>
       </div>
-      <div class="form-group" id="product-initial-cost-group" style="display:none;">
-        <label class="form-label">Initial Stock Unit Cost <span>*</span></label>
-        <input type="number" class="form-control" id="product-initial-cost" placeholder="0.00" min="0" step="0.01">
-        <div class="form-hint">Required whenever you set a starting quantity - this becomes the product's first cost
-          batch</div>
+      <div class="form-group">
+        <label class="form-label">Reorder Level <span>*</span></label>
+        <input type="number" class="form-control" id="product-reorder" placeholder="0" min="0">
+        <div class="form-hint">Alert triggers when qty reaches this level</div>
       </div>
     </div>
     <div class="drawer-footer">
