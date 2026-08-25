@@ -78,8 +78,12 @@ const PAGE_ACCESS = {
     window.dispatchEvent(new CustomEvent('inno-auth-ready'));
 
     db.auth.onAuthStateChange((event, newSession) => {
-        if (event === 'SIGNED_OUT' || !newSession) {
-            _deny();
+        if (event === 'SIGNED_OUT') {
+            /* supabase-js can emit a spurious SIGNED_OUT after a backgrounded tab's
+               token refresh races on wake — re-check directly before actually denying */
+            db.auth.getSession().then(({ data: { session: recheck } }) => {
+                if (!recheck) _deny();
+            });
         }
     });
 

@@ -407,6 +407,23 @@
 
     </div>
 
+    <!-- ===== VERIFY EMAIL MODAL ===== -->
+    <div class="modal-backdrop" id="verify-modal">
+        <div class="modal">
+            <div class="modal-icon" style="background:var(--primary-soft);color:#1d4ed8;">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+            <h3>Check your inbox</h3>
+            <p>We've sent a verification link to <strong id="verify-modal-email">your email</strong>. Click it to
+                activate your account — don't forget to check your spam or junk folder if it doesn't arrive shortly.</p>
+            <div class="modal-actions" style="flex-direction:column;gap:10px;">
+                <button class="btn btn-primary w-100" onclick="closeVerifyModal()">Got it</button>
+                <button class="btn btn-outline w-100" id="resend-verify-btn" onclick="resendVerification()">Resend
+                    email</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- ===== SCRIPTS ===== -->
     <script>
@@ -767,6 +784,40 @@
 
         };
 
+        let pendingVerifyEmail = '';
+        let resendCooldownActive = false;
+
+        window.closeVerifyModal = function () {
+            document.getElementById('verify-modal').classList.remove('show');
+            switchTab('signin');
+        };
+
+        window.resendVerification = async function () {
+            if (resendCooldownActive || !pendingVerifyEmail) return;
+            const btn = document.getElementById('resend-verify-btn');
+
+            const { error } = await db.auth.resend({ type: 'signup', email: pendingVerifyEmail });
+            if (error) {
+                showToast(error.message || 'Failed to resend. Try again shortly.', 'error');
+                return;
+            }
+
+            showToast('Verification email resent.', 'success');
+            resendCooldownActive = true;
+            let seconds = 60;
+            btn.disabled = true;
+            const tick = setInterval(() => {
+                btn.textContent = `Resend email (${seconds}s)`;
+                seconds--;
+                if (seconds < 0) {
+                    clearInterval(tick);
+                    btn.disabled = false;
+                    btn.textContent = 'Resend email';
+                    resendCooldownActive = false;
+                }
+            }, 1000);
+        };
+
         window.handleSignUp = async function () {
 
             const fullName =
@@ -952,12 +1003,6 @@
                SUCCESS
                ===================================================== */
 
-            showToast(
-                'Account created! Check your inbox to verify your email before signing in.',
-                'success'
-            );
-
-
             btn.disabled = false;
 
             btn.innerHTML =
@@ -973,8 +1018,11 @@
             }
 
 
-            /* Switch to sign in */
-            switchTab('signin');
+            /* Show verification modal instead of a toast + immediate tab switch */
+            pendingVerifyEmail = email;
+            document.getElementById('verify-modal-email').textContent = email;
+            document.getElementById('verify-modal').classList.add('show');
+
             document.getElementById('signin-email').value = email;
             ['signup-name', 'signup-username', 'signup-email', 'signup-password', 'signup-confirm']
                 .forEach(id => { document.getElementById(id).value = ''; });
