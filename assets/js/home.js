@@ -69,9 +69,11 @@ async function loadDashboard() {
         const lowStock = products?.filter(p => p.quantity > 0 && p.quantity <= p.reorder_level).length || 0;
         const outOfStock = products?.filter(p => p.quantity <= 0).length || 0;
 
+        const activeIds = (products || []).map(p => p.id);
         const { data: valueRows } = await db
             .from('stock_value_by_product')
-            .select('stock_value');
+            .select('stock_value')
+            .in('product_id', activeIds);
 
         const stockValue = valueRows?.reduce((sum, r) => sum + (r.stock_value || 0), 0) || 0;
 
