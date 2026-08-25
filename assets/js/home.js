@@ -104,11 +104,17 @@ async function loadDashboard() {
         document.getElementById('val-movements-today').textContent = (movementsToday || 0).toLocaleString();
 
         /* ── 4. Recent movements (last 8) ── */
-        const { data: recentMovements } = await db
+        let recentQuery = db
             .from('stock_movements')
             .select('id, type, quantity, created_at, products(name)')
             .order('created_at', { ascending: false })
             .limit(8);
+
+        if (user.role === 'staff') {
+            recentQuery = recentQuery.eq('created_by', user.id);
+        }
+
+        const { data: recentMovements } = await recentQuery;
 
         renderRecentMovements(recentMovements || []);
 
