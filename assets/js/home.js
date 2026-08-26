@@ -120,11 +120,17 @@ async function loadDashboard() {
 
         /* ── 5. Top 5 moving products (last 30 days) ── */
         const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
-        const { data: topMovements } = await db
+        let topQuery = db
             .from('stock_movements')
             .select('product_id, quantity, products(name, categories(name))')
             .eq('type', 'out')
             .gte('created_at', thirtyDaysAgo);
+
+        if (user.role === 'staff') {
+            topQuery = topQuery.eq('created_by', user.id);
+        }
+
+        const { data: topMovements } = await topQuery;
 
         renderTopProducts(topMovements || []);
 
@@ -272,12 +278,18 @@ let chartRequestId = 0;
 async function loadChartDataByRange(fromISO, toISO, days = null) {
     const requestId = ++chartRequestId;
 
-    const { data: movements } = await db
+    let movementsQuery = db
         .from('stock_movements')
         .select('type, quantity, created_at')
         .gte('created_at', fromISO)
         .lte('created_at', toISO)
         .in('type', ['receive', 'in', 'out', 'purchase_order']);
+
+    if (window.currentUser?.role === 'staff') {
+        movementsQuery = movementsQuery.eq('created_by', window.currentUser.id);
+    }
+
+    const { data: movements } = await movementsQuery;
 
     if (requestId !== chartRequestId) return; // a newer chart request started while this one was in flight — discard
 
